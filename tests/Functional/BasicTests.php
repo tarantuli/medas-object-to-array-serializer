@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Medas\ObjectToArraySerializerTest\Functional;
+
+use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
+    BasicClass,
+    ElevatedProperties,
+    EmbeddedClass,
+    PrivateProperties
+};
+
+class BasicTests extends BaseTestClass
+{
+    public function testBasicClass(): void
+    {
+        $object = new BasicClass();
+        $object->id = 1;
+        $object->name = 'Test';
+
+        $this->executeTest($object);
+    }
+
+    public function testPrivateProperties(): void
+    {
+        $object = new PrivateProperties();
+        $object->id = 1;
+
+        $this->executeTest($object);
+    }
+
+    public function testElevatedProperties(): void
+    {
+        $object = new ElevatedProperties(1, 'isProtected', 'isPrivate');
+
+        $this->executeTest($object);
+    }
+
+    public function testEmbeddedClass(): void
+    {
+        $object = new EmbeddedClass();
+        $object->basicClass = new BasicClass();
+        $object->basicClass->name = 'child class';
+        $object->privateProperties = new PrivateProperties();
+        $object->elevatedProperties = new ElevatedProperties(10, '11', '12');
+
+        $this->executeTest($object);
+    }
+
+    public function testArrayOfChildren(): void
+    {
+        $object = new ArrayOfChildren();
+
+        $object->typedChildren = [
+            new ElevatedProperties(100, 'protectedA', 'privateA'),
+            new ElevatedProperties(50, 'protectedB', 'privateC'),
+        ];
+
+        $this->executeTest($object);
+    }
+}
