@@ -12,6 +12,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     Enums\IntBackedEnum,
     Enums\StringBackedEnum,
     Enums\UnbackedEnum,
+    MixedProperties,
     PrivateProperties
 };
 
@@ -71,6 +72,14 @@ class BasicTests extends BaseTestClass
             IntBackedEnum::B,
             StringBackedEnum::B
         );
+
+        $this->executeTest($object);
+    }
+
+    public function testMixed(): void
+    {
+        $object = new MixedProperties();
+        $object->property1 = ['cheese'];
 
         $this->executeTest($object);
     }

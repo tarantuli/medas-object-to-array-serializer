@@ -36,6 +36,10 @@ class ArrayToObjectCaster
 
     private function checkValueType(mixed &$value, string $typeName): void
     {
+        if ($typeName === 'mixed') {
+            return;
+        }
+
         if (get_debug_type($value) === $typeName) {
             // The value already has the right type
             return;
