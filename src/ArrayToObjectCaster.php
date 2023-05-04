@@ -42,7 +42,12 @@ class ArrayToObjectCaster
         }
 
         if (is_array($value) && class_exists($typeName)) {
-            $value = $this->cast($value, $typeName);
+            if (enum_exists($typeName)) {
+                $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
+            }
+            else {
+                $value = $this->cast($value, $typeName);
+            }
             return;
         }
 
@@ -83,5 +88,10 @@ class ArrayToObjectCaster
         }
 
         return $childClass;
+    }
+
+    private function getEnumValue(array $value, \ReflectionEnum $enum): mixed
+    {
+        return $enum->getCase($value['name'])->getValue();
     }
 }

@@ -8,6 +8,10 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     BasicClass,
     ElevatedProperties,
     EmbeddedClass,
+    EnumProperties,
+    Enums\IntBackedEnum,
+    Enums\StringBackedEnum,
+    Enums\UnbackedEnum,
     PrivateProperties
 };
 
@@ -56,6 +60,17 @@ class BasicTests extends BaseTestClass
             new ElevatedProperties(100, 'protectedA', 'privateA'),
             new ElevatedProperties(50, 'protectedB', 'privateC'),
         ];
+
+        $this->executeTest($object);
+    }
+
+    public function testEnums(): void
+    {
+        $object = new EnumProperties(
+            UnbackedEnum::B,
+            IntBackedEnum::B,
+            StringBackedEnum::B
+        );
 
         $this->executeTest($object);
     }
