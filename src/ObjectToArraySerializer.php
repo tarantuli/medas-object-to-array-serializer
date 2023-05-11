@@ -9,11 +9,11 @@ use Medas\Core\Interfaces\Serializer;
 use Medas\Core\Interfaces\Type;
 
 #[Service]
-class ObjectToArraySerializer implements Serializer
+readonly class ObjectToArraySerializer implements Serializer
 {
     public function __construct(
-        private readonly ObjectToArrayCaster $objectToArrayCaster,
-        private readonly ArrayToObjectCaster $arrayToObjectCaster,
+        private ObjectToArrayCaster $objectToArrayCaster,
+        private ArrayToObjectCaster $arrayToObjectCaster,
     )
     {
     }

@@ -6,6 +6,9 @@ namespace Medas\ObjectToArraySerializerTest\Functional;
 
 use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     BasicClass,
+    Directory\AbsoluteChild,
+    Directory\ImportedChild,
+    Directory\RelativeChild,
     ElevatedProperties,
     EmbeddedClass,
     EnumProperties,
@@ -61,6 +64,10 @@ class BasicTests extends BaseTestClass
             new ElevatedProperties(100, 'protectedA', 'privateA'),
             new ElevatedProperties(50, 'protectedB', 'privateC'),
         ];
+
+        $object->relativeChildren = [new RelativeChild()];
+        $object->importChildren = [new ImportedChild()];
+        $object->absoluteChildren = [new AbsoluteChild()];
 
         $this->executeTest($object);
     }

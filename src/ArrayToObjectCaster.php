@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\Attributes\Service;
+use Medas\PhpClassAnalysis\ClassAnalyser;
 
 #[Service]
-class ArrayToObjectCaster
+readonly class ArrayToObjectCaster
 {
+    public function __construct(
+        private ClassAnalyser $classAnalyser,
+    )
+    {
+    }
+
     public function cast(array $values, string $className): object
     {
         $reflectionClass = new \ReflectionClass($className);
@@ -66,7 +73,7 @@ class ArrayToObjectCaster
             throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
         }
 
-        if (!preg_match('/@var\s+(\w+)\[]/', $doccomment, $match)) {
+        if (!preg_match('/@var\s+([\w\\\]+)\[]/', $doccomment, $match)) {
             throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
         }
 
@@ -83,15 +90,14 @@ class ArrayToObjectCaster
             return $childClass;
         }
 
-        // TODO it does not handle use statements at all at the moment
-        if ($reflectionClass->inNamespace()) {
-            $childClass = '\\' . $reflectionClass->getNamespaceName() . '\\' . $childClass;
-        }
-        else {
-            $childClass = '\\' . $childClass;
+        $analysis = $this->classAnalyser->analyseClass($reflectionClass);
+        $fqcn = $analysis->resolveImport($childClass);
+
+        if ($fqcn === null) {
+            $fqcn = ($analysis->namespace ? $analysis->namespace . '\\' : '') . $childClass;
         }
 
-        return $childClass;
+        return $fqcn;
     }
 
     private function getEnumValue(array $value, \ReflectionEnum $enum): mixed
