@@ -25,10 +25,13 @@ readonly class ArrayToObjectCaster
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
             $types = parameterTypes($reflectionProperty);
 
-            if (count($types) === 1) {
+            if ($reflectionProperty->getType()?->allowsNull() && $value === null) {
+                // Do nothing
+            }
+            elseif (count($types) === 1) {
                 $typeName = $types[0]->getName();
 
-                if ($typeName === 'array') {
+                if ($typeName === 'array' && is_iterable($value)) {
                     $this->castArrayMembers($reflectionProperty, $reflectionClass, $value);
                 }
 
