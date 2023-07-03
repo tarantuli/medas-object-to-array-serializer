@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializerTest\Functional;
 
 use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
+    ArrayOfEnums,
     BasicClass,
     Directory\AbsoluteChild,
     Directory\ImportedChild,
@@ -79,6 +80,13 @@ class BasicTests extends BaseTestClass
             IntBackedEnum::B,
             StringBackedEnum::B
         );
+
+        $this->executeTest($object);
+    }
+
+    public function testArrayOfEnums(): void
+    {
+        $object = new ArrayOfEnums();
 
         $this->executeTest($object);
     }

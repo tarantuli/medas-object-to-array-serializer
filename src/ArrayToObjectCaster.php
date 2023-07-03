@@ -83,7 +83,7 @@ readonly class ArrayToObjectCaster
         $childClass = $this->referenceToFqcn($match[1], $reflectionClass);
 
         foreach ($value as &$child) {
-            $child = $this->cast($child, $childClass);
+            $this->checkValueType($child, $childClass);
         }
     }
 
