@@ -11,6 +11,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "morphp/medas-core": "dev-dev",
         "morphp/medas-php-class-analysis": "dev-dev"
     },
     "require-dev": {
