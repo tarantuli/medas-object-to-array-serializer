@@ -15,7 +15,7 @@ class ObjectToArraySerializerPackage extends BasePackage
     public function dependencies(): array
     {
         return [
-            PhpClassAnalysisPackage::class,
+            PhpClassAnalysisPackage::instance(),
         ];
     }
 
