@@ -18,7 +18,7 @@ class ObjectToArrayCaster
             $foundObject = false;
 
             array_walk_recursive($value, function (&$nodeValue) use (&$foundObject) {
-                if (!is_object($nodeValue)) {
+                if (!is_object($nodeValue) || $nodeValue instanceof \Closure) {
                     return;
                 }
 

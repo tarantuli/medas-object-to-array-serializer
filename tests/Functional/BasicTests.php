@@ -7,6 +7,7 @@ namespace Medas\ObjectToArraySerializerTest\Functional;
 use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ArrayOfEnums,
     BasicClass,
+    ClosureClass,
     Directory\AbsoluteChild,
     Directory\ImportedChild,
     Directory\RelativeChild,
@@ -95,6 +96,15 @@ class BasicTests extends BaseTestClass
     {
         $object = new MixedProperties();
         $object->property1 = ['cheese'];
+
+        $this->executeTest($object);
+    }
+
+    public function testClosures(): void
+    {
+        $object = new ClosureClass();
+        $object->property1 = 'cheese';
+        $object->closure = mt_rand(...);
 
         $this->executeTest($object);
     }
