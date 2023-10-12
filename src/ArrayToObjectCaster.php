@@ -23,7 +23,7 @@ readonly class ArrayToObjectCaster
 
         foreach ($values as $propertyName => $value) {
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
-            $types = parameterTypes($reflectionProperty);
+            $types = propertyTypes($reflectionProperty);
 
             if ($reflectionProperty->getType()?->allowsNull() && $value === null) {
                 // Do nothing
