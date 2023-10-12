@@ -18,7 +18,8 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     Enums\StringBackedEnum,
     Enums\UnbackedEnum,
     MixedProperties,
-    PrivateProperties
+    PrivateProperties,
+    TemplateTypes\TemplateExtendingClass
 };
 
 class BasicTests extends BaseTestClass
@@ -105,6 +106,15 @@ class BasicTests extends BaseTestClass
         $object = new ClosureClass();
         $object->property1 = 'cheese';
         $object->closure = mt_rand(...);
+
+        $this->executeTest($object);
+    }
+
+    public function testTemplateTypes(): void
+    {
+        $object = new TemplateExtendingClass();
+        $object->elements = [new BasicClass()];
+        $object->intIndexed = [new BasicClass(), new BasicClass()];
 
         $this->executeTest($object);
     }

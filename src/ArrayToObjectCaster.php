@@ -12,6 +12,7 @@ readonly class ArrayToObjectCaster
 {
     public function __construct(
         private ClassAnalyser $classAnalyser,
+        private TemplateTypeFinder $templateTypeFinder,
     )
     {
     }
@@ -70,21 +71,36 @@ readonly class ArrayToObjectCaster
 
     private function castArrayMembers(\ReflectionProperty $reflectionProperty, \ReflectionClass $reflectionClass, mixed &$value): void
     {
+        $childClass = $this->referenceToFqcn(
+            $this->findArrayType($reflectionClass, $reflectionProperty),
+            $reflectionClass
+        );
+
+        foreach ($value as &$child) {
+            $this->checkValueType($child, $childClass);
+        }
+    }
+
+    private function findArrayType(\ReflectionClass $reflectionClass, \ReflectionProperty $reflectionProperty): string
+    {
         $doccomment = $reflectionProperty->getDocComment();
 
         if ($doccomment === false) {
             throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
         }
 
-        if (!preg_match('/@var\s+([\w\\\]+)\[]/', $doccomment, $match)) {
-            throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
+        if (preg_match('/@var\s+([\w\\\]+)\[]/', $doccomment, $match)) {
+            return $match[1];
         }
 
-        $childClass = $this->referenceToFqcn($match[1], $reflectionClass);
-
-        foreach ($value as &$child) {
-            $this->checkValueType($child, $childClass);
+        if (
+            preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
+            && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)
+        ) {
+            return $type;
         }
+
+        throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
     }
 
     private function referenceToFqcn(string $childClass, \ReflectionClass $reflectionClass): string
