@@ -7,8 +7,14 @@ namespace Medas\ObjectToArraySerializer;
 use Medas\Core\Attributes\Service;
 
 #[Service]
-class ObjectToArrayCaster
+readonly class ObjectToArrayCaster
 {
+    public function __construct(
+        private SerializeToClassName\ClassManager $serializeToClassNameManager,
+    )
+    {
+    }
+
     public function cast(object $value): array
     {
         $value = $this->castToArray($value);
@@ -23,8 +29,16 @@ class ObjectToArrayCaster
                 }
 
                 $foundObject = true;
-                $nodeValue = $this->castToArray($nodeValue);
-            });
+
+                if ($this->serializeToClassNameManager->shouldSerializeToClassName($nodeValue::class)) {
+                    $nodeValue = $nodeValue::class;
+                }
+                else {
+                    $nodeValue = $this->castToArray($nodeValue);
+                }
+            }
+
+            );
         } while ($foundObject);
 
         return $value;

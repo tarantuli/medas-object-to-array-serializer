@@ -18,6 +18,8 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     Enums\StringBackedEnum,
     Enums\UnbackedEnum,
     MixedProperties,
+    ObjectToClassName\ExtendedClass,
+    ObjectToClassName\HolderClass,
     PrivateProperties,
     TemplateTypes\TemplateExtendingClass
 };
@@ -116,6 +118,12 @@ class BasicTests extends BaseTestClass
         $object->elements = [new BasicClass()];
         $object->intIndexed = [new BasicClass(), new BasicClass()];
 
+        $this->executeTest($object);
+    }
+
+    public function testObjectTOClassName(): void
+    {
+        $object = new HolderClass(new ExtendedClass());
         $this->executeTest($object);
     }
 }

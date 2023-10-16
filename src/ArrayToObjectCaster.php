@@ -12,6 +12,7 @@ readonly class ArrayToObjectCaster
 {
     public function __construct(
         private ClassAnalyser $classAnalyser,
+        private SerializeToClassName\ClassManager $serializeToClassNameManager,
         private TemplateTypeFinder $templateTypeFinder,
     )
     {
@@ -63,6 +64,11 @@ readonly class ArrayToObjectCaster
             else {
                 $value = $this->cast($value, $typeName);
             }
+            return;
+        }
+
+        if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
+            $value = new $value();
             return;
         }
 
