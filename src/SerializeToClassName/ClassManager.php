@@ -29,7 +29,7 @@ readonly class ClassManager
         $class = new \ReflectionClass($className);
 
         do {
-            if ($class->getAttributes(SerializeToClassName::class)) {
+            if ($class->getAttributes(CastToClassName::class)) {
                 return true;
             }
         } while ($class = $class->getParentClass());
