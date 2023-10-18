@@ -48,16 +48,22 @@ readonly class ObjectToArrayCaster
     {
         $values = [];
 
-        foreach ((new \ReflectionClass($object))->getProperties() as $reflectionProperty) {
-            if (!$reflectionProperty->isInitialized($object)) {
-                continue;
-            }
+        foreach ([true, false] as $promotionState) {
+            foreach ((new \ReflectionClass($object))->getProperties() as $reflectionProperty) {
+                if ($reflectionProperty->isPromoted() !== $promotionState) {
+                    continue;
+                }
 
-            if ($reflectionProperty->getAttributes(DontSerializeMe::class)) {
-                continue;
-            }
+                if (!$reflectionProperty->isInitialized($object)) {
+                    continue;
+                }
 
-            $values[$reflectionProperty->name] = $reflectionProperty->getValue($object);
+                if ($reflectionProperty->getAttributes(DontSerializeMe::class)) {
+                    continue;
+                }
+
+                $values[$reflectionProperty->name] = $reflectionProperty->getValue($object);
+            }
         }
 
         return $values;
