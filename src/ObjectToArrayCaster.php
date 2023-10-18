@@ -31,7 +31,7 @@ readonly class ObjectToArrayCaster
                 $foundObject = true;
 
                 if ($this->serializeToClassNameManager->shouldSerializeToClassName($nodeValue::class)) {
-                    $nodeValue = str_replace('\\', '|', $nodeValue::class);
+                    $nodeValue = $nodeValue::class;
                 }
                 else {
                     $nodeValue = $this->castToArray($nodeValue);

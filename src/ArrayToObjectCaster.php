@@ -76,7 +76,6 @@ readonly class ArrayToObjectCaster
         }
 
         if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
-            $value = str_replace('|', '\\', $value);
             $value = new $value();
             return;
         }
