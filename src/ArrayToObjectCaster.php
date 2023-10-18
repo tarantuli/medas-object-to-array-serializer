@@ -6,6 +6,7 @@ namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\Attributes\Service;
 use Medas\PhpClassAnalysis\ClassAnalyser;
+use Medas\PhpClassAnalysis\InternalTypes;
 
 #[Service]
 readonly class ArrayToObjectCaster
@@ -84,13 +85,17 @@ readonly class ArrayToObjectCaster
 
     private function castArrayMembers(\ReflectionProperty $reflectionProperty, \ReflectionClass $reflectionClass, mixed &$value): void
     {
-        $childClass = $this->referenceToFqcn(
-            $this->findArrayType($reflectionClass, $reflectionProperty),
-            $reflectionClass
-        );
+        $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
+
+        if (!in_array($arrayType, InternalTypes::NAMES)) {
+            $arrayType = $this->referenceToFqcn(
+                $arrayType,
+                $reflectionClass
+            );
+        }
 
         foreach ($value as &$child) {
-            $this->checkValueType($child, $childClass);
+            $this->checkValueType($child, $arrayType);
         }
     }
 

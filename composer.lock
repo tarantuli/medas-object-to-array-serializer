@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "ca9fefb983a672aff5b55d11d18765128d051c18"
+                "reference": "17edd1611ca2e9c4717b5de866c9e8f92f8848b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/ca9fefb983a672aff5b55d11d18765128d051c18",
-                "reference": "ca9fefb983a672aff5b55d11d18765128d051c18",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/17edd1611ca2e9c4717b5de866c9e8f92f8848b6",
+                "reference": "17edd1611ca2e9c4717b5de866c9e8f92f8848b6",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-10-11T14:39:01+00:00"
+            "time": "2023-10-18T11:41:05+00:00"
         },
         {
             "name": "morphp/medas-php-class-analysis",
@@ -105,12 +105,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-php-class-analysis.git",
-                "reference": "0cbe8e3c9ac70fe1e63c82e7c12babbe8597ddad"
+                "reference": "10194f8c1d016530998fd8447f17f5b7621ca327"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-php-class-analysis/zipball/0cbe8e3c9ac70fe1e63c82e7c12babbe8597ddad",
-                "reference": "0cbe8e3c9ac70fe1e63c82e7c12babbe8597ddad",
+                "url": "https://api.github.com/repos/tarantuli/medas-php-class-analysis/zipball/10194f8c1d016530998fd8447f17f5b7621ca327",
+                "reference": "10194f8c1d016530998fd8447f17f5b7621ca327",
                 "shasum": ""
             },
             "require": {
@@ -139,7 +139,7 @@
                 "source": "https://github.com/tarantuli/medas-php-class-analysis/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-php-class-analysis/issues"
             },
-            "time": "2023-08-17T07:10:35+00:00"
+            "time": "2023-10-18T14:17:26+00:00"
         },
         {
             "name": "morphp/medas-php-tokenizer",
@@ -353,12 +353,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-service-manager.git",
-                "reference": "693ce834d572359f8ae6a8f03d6c0aada9d9cf0e"
+                "reference": "8c8fedda10248b2a0e1638af6b67c10008c093f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-service-manager/zipball/693ce834d572359f8ae6a8f03d6c0aada9d9cf0e",
-                "reference": "693ce834d572359f8ae6a8f03d6c0aada9d9cf0e",
+                "url": "https://api.github.com/repos/tarantuli/medas-service-manager/zipball/8c8fedda10248b2a0e1638af6b67c10008c093f1",
+                "reference": "8c8fedda10248b2a0e1638af6b67c10008c093f1",
                 "shasum": ""
             },
             "require": {
@@ -392,7 +392,7 @@
                 "source": "https://github.com/tarantuli/medas-service-manager/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-service-manager/issues"
             },
-            "time": "2023-08-23T13:29:08+00:00"
+            "time": "2023-10-13T14:11:38+00:00"
         },
         {
             "name": "myclabs/deep-copy",

@@ -6,6 +6,7 @@ namespace Medas\ObjectToArraySerializerTest\Functional;
 
 use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ArrayOfEnums,
+    ArrayOfInternalTypes,
     BasicClass,
     ClosureClass,
     Directory\AbsoluteChild,
@@ -124,6 +125,12 @@ class BasicTests extends BaseTestClass
     public function testObjectTOClassName(): void
     {
         $object = new HolderClass(new ExtendedClass());
+        $this->executeTest($object);
+    }
+
+    public function testArrayOfInternalTypes(): void
+    {
+        $object = new ArrayOfInternalTypes(['John', 'Mary']);
         $this->executeTest($object);
     }
 }

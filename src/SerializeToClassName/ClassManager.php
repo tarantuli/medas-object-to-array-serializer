@@ -26,6 +26,10 @@ readonly class ClassManager
 
     private function determine(string $className): bool
     {
+        if (!class_exists($className)) {
+            return false;
+        }
+
         $class = new \ReflectionClass($className);
 
         do {
