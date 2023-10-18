@@ -21,7 +21,13 @@ readonly class ArrayToObjectCaster
     public function cast(array $values, string $className): object
     {
         $reflectionClass = new \ReflectionClass($className);
-        $object = $reflectionClass->newInstanceWithoutConstructor();
+
+        try {
+            $object = $reflectionClass->newInstance();
+        }
+        catch (\ArgumentCountError) {
+            $object = $reflectionClass->newInstanceWithoutConstructor();
+        }
 
         foreach ($values as $propertyName => $value) {
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
@@ -39,8 +45,9 @@ readonly class ArrayToObjectCaster
 
                 $this->checkValueType($value, $typeName);
             }
-
-            $reflectionProperty->setValue($object, $value);
+            if (!$reflectionProperty->isReadOnly() || !$reflectionProperty->isInitialized($object)) {
+                $reflectionProperty->setValue($object, $value);
+            }
         }
 
         return $object;
