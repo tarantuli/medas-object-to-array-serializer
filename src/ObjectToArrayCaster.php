@@ -44,23 +44,22 @@ readonly class ObjectToArrayCaster
         return $value;
     }
 
-    private function castToArray(object $value): array
+    private function castToArray(object $object): array
     {
-        return $this->normalizePrivatePropertyNames((array) $value);
-    }
+        $values = [];
 
-    private function normalizePrivatePropertyNames(array $sourceArray): array
-    {
-        $result = [];
-
-        foreach ($sourceArray as $key => $basicValue) {
-            if (preg_match('/^\0.+\0(.+)$/', (string) $key, $match)) {
-                $key = $match[1];
+        foreach ((new \ReflectionClass($object))->getProperties() as $reflectionProperty) {
+            if (!$reflectionProperty->isInitialized($object)) {
+                continue;
             }
 
-            $result[$key] = $basicValue;
+            if ($reflectionProperty->getAttributes(DontSerializeMe::class)) {
+                continue;
+            }
+
+            $values[$reflectionProperty->name] = $reflectionProperty->getValue($object);
         }
 
-        return $result;
+        return $values;
     }
 }

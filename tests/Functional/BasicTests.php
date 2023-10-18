@@ -22,6 +22,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ObjectToClassName\ExtendedClass,
     ObjectToClassName\HolderClass,
     PrivateProperties,
+    PropertyToSkip,
     TemplateTypes\TemplateExtendingClass
 };
 
@@ -132,5 +133,17 @@ class BasicTests extends BaseTestClass
     {
         $object = new ArrayOfInternalTypes(['John', 'Mary']);
         $this->executeTest($object);
+    }
+
+    public function testDontSerializeMe(): void
+    {
+        $object = new PropertyToSkip();
+
+        $object->dontSerializeMe = 20;
+        $object->doSerializeMe = 30;
+
+        // The value that mustn't be serialized must be its default value again, so the result of serializing
+        // then unserializing should be different from the original object
+        $this->executeTestShouldBeDifferent($object);
     }
 }
