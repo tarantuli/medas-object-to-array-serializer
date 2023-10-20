@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializerTest\Functional;
 
+use Medas\ObjectToArraySerializer\Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments;
 use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ArrayOfEnums,
     ArrayOfInternalTypes,
@@ -23,7 +24,9 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ObjectToClassName\HolderClass,
     PrivateProperties,
     PropertyToSkip,
-    TemplateTypes\TemplateExtendingClass
+    TemplateTypes\TemplateExtendingClass,
+    WithConstructors\HolderOfIllegalClasses,
+    WithConstructors\HolderOfLegalClasses
 };
 
 class BasicTests extends BaseTestClass
@@ -145,5 +148,15 @@ class BasicTests extends BaseTestClass
         // The value that mustn't be serialized must be its default value again, so the result of serializing
         // then unserializing should be different from the original object
         $this->executeTestShouldBeDifferent($object);
+    }
+
+    public function testConstructors(): void
+    {
+        $object = new HolderOfLegalClasses();
+        $this->executeTest($object);
+
+        $object = new HolderOfIllegalClasses();
+        $this->expectException(ClassThatCastsToNameShouldntHaveConstructorArguments::class);
+        $this->executeTest($object);
     }
 }

@@ -23,12 +23,7 @@ readonly class ArrayToObjectCaster
     {
         $reflectionClass = new \ReflectionClass($className);
 
-        try {
-            $object = $reflectionClass->newInstance();
-        }
-        catch (\ArgumentCountError) {
-            $object = $reflectionClass->newInstanceWithoutConstructor();
-        }
+        $object = $reflectionClass->newInstanceWithoutConstructor();
 
         foreach ($values as $propertyName => $value) {
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
@@ -76,7 +71,14 @@ readonly class ArrayToObjectCaster
         }
 
         if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
+            $constructor = (new \ReflectionClass($value))->getConstructor();
+
+            if ($constructor && $constructor->getNumberOfParameters() >= 1) {
+                throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);
+            }
+
             $value = new $value();
+
             return;
         }
 
