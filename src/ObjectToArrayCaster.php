@@ -36,9 +36,7 @@ readonly class ObjectToArrayCaster
                 else {
                     $nodeValue = $this->castToArray($nodeValue);
                 }
-            }
-
-            );
+            });
         } while ($foundObject);
 
         return $value;

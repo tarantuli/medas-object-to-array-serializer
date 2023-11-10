@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpClassAnalysis\ClassAnalyser;
-use Medas\PhpClassAnalysis\InternalTypes;
+use Medas\PhpClassAnalysis\{ClassAnalyser, InternalTypes};
 
 #[Service]
 readonly class ArrayToObjectCaster
 {
     public function __construct(
-        private ClassAnalyser $classAnalyser,
+        private ClassAnalyser                     $classAnalyser,
         private SerializeToClassName\ClassManager $serializeToClassNameManager,
-        private TemplateTypeFinder $templateTypeFinder,
+        private TemplateTypeFinder                $templateTypeFinder,
     )
     {
     }
@@ -22,7 +21,6 @@ readonly class ArrayToObjectCaster
     public function cast(array $values, string $className): object
     {
         $reflectionClass = new \ReflectionClass($className);
-
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
         foreach ($values as $propertyName => $value) {
@@ -41,6 +39,7 @@ readonly class ArrayToObjectCaster
 
                 $this->checkValueType($value, $typeName);
             }
+
             if (!$reflectionProperty->isReadOnly() || !$reflectionProperty->isInitialized($object)) {
                 $reflectionProperty->setValue($object, $value);
             }
@@ -67,6 +66,7 @@ readonly class ArrayToObjectCaster
             else {
                 $value = $this->cast($value, $typeName);
             }
+
             return;
         }
 
@@ -85,15 +85,16 @@ readonly class ArrayToObjectCaster
         throw new Exceptions\CantCastValueToType($value, $typeName);
     }
 
-    private function castArrayMembers(\ReflectionProperty $reflectionProperty, \ReflectionClass $reflectionClass, mixed &$value): void
+    private function castArrayMembers(
+        \ReflectionProperty $reflectionProperty,
+        \ReflectionClass    $reflectionClass,
+        mixed &             $value
+    ): void
     {
         $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
 
         if (!in_array($arrayType, InternalTypes::NAMES)) {
-            $arrayType = $this->referenceToFqcn(
-                $arrayType,
-                $reflectionClass
-            );
+            $arrayType = $this->referenceToFqcn($arrayType, $reflectionClass);
         }
 
         foreach ($value as &$child) {

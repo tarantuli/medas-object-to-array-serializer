@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer\SerializeToClassName;
 
-use Medas\Core\Attributes\Service;
-use Medas\Core\Interfaces\CacheManager;
+use Medas\Core\{Attributes\Service, Interfaces\CacheManager};
 
 #[Service]
 readonly class ClassManager
@@ -18,10 +17,7 @@ readonly class ClassManager
 
     public function shouldSerializeToClassName(string $className): bool
     {
-        return $this->cacheManager->get()->get(
-            [__CLASS__, $className],
-            fn() => $this->determine($className)
-        );
+        return $this->cacheManager->get()->get([__CLASS__, $className], fn() => $this->determine($className));
     }
 
     private function determine(string $className): bool
