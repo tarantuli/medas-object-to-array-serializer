@@ -88,7 +88,7 @@ readonly class ArrayToObjectCaster
     private function castArrayMembers(
         \ReflectionProperty $reflectionProperty,
         \ReflectionClass    $reflectionClass,
-        mixed &             $value
+        mixed               &$value
     ): void
     {
         $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
@@ -114,10 +114,8 @@ readonly class ArrayToObjectCaster
             return $match[1];
         }
 
-        if (
-            preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
-            && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)
-        ) {
+        if (preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
+                && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)) {
             return $type;
         }
 
