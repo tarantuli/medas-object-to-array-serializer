@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpClassAnalysis\{ClassAnalyser, InternalTypes};
+use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
 
 #[Service]
 readonly class ArrayToObjectCaster
@@ -93,7 +93,7 @@ readonly class ArrayToObjectCaster
     {
         $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
 
-        if (!in_array($arrayType, InternalTypes::NAMES)) {
+        if (!in_array($arrayType, PhpKeywords::INTERNAL_TYPES)) {
             $arrayType = $this->referenceToFqcn($arrayType, $reflectionClass);
         }
 
@@ -138,7 +138,7 @@ readonly class ArrayToObjectCaster
         return $fqcn;
     }
 
-    private function getEnumValue(array $value, \ReflectionEnum $enum): mixed
+    private function getEnumValue(array $value, \ReflectionEnum $enum): \UnitEnum
     {
         return $enum->getCase($value['name'])->getValue();
     }
