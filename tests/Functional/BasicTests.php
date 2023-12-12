@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializerTest\Functional;
 
 use Medas\ObjectToArraySerializer\Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments;
-use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
+use Medas\ObjectToArraySerializerTest\MockUps\{
+    ArrayOfChildren,
     ArrayOfEnums,
     ArrayOfInternalTypes,
     BasicClass,
@@ -23,6 +24,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ObjectToClassName\ExtendedClass,
     ObjectToClassName\HolderClass,
     PrivateProperties,
+    PropertyHandlers\WithPropertyHandler,
     PropertyToSkip,
     TemplateTypes\TemplateExtendingClass,
     WithConstructors\HolderOfIllegalClasses,
@@ -84,11 +86,7 @@ class BasicTests extends BaseTestClass
 
     public function testEnums(): void
     {
-        $object = new EnumProperties(
-            UnbackedEnum::B,
-            IntBackedEnum::B,
-            StringBackedEnum::B
-        );
+        $object = new EnumProperties(UnbackedEnum::B, IntBackedEnum::B, StringBackedEnum::B);
 
         $this->executeTest($object);
     }
@@ -129,19 +127,20 @@ class BasicTests extends BaseTestClass
     public function testObjectTOClassName(): void
     {
         $object = new HolderClass(new ExtendedClass());
+
         $this->executeTest($object);
     }
 
     public function testArrayOfInternalTypes(): void
     {
         $object = new ArrayOfInternalTypes(['John', 'Mary']);
+
         $this->executeTest($object);
     }
 
     public function testDontSerializeMe(): void
     {
         $object = new PropertyToSkip();
-
         $object->dontSerializeMe = 20;
         $object->doSerializeMe = 30;
 
@@ -153,10 +152,20 @@ class BasicTests extends BaseTestClass
     public function testConstructors(): void
     {
         $object = new HolderOfLegalClasses();
+
         $this->executeTest($object);
 
         $object = new HolderOfIllegalClasses();
+
         $this->expectException(ClassThatCastsToNameShouldntHaveConstructorArguments::class);
+        $this->executeTest($object);
+    }
+
+    public function testPropertyHandler(): void
+    {
+        $object = new WithPropertyHandler();
+        $object->properties = [1, 2, 3, 4];
+
         $this->executeTest($object);
     }
 }

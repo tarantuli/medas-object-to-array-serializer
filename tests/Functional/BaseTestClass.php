@@ -29,6 +29,7 @@ abstract class BaseTestClass extends TestCase
     {
         $serializer = service(ObjectToArraySerializer::class);
         $serialized = $serializer->serialize($object);
+
         self::assertIsArray($serialized);
 
         return $serializer->unserialize($serialized, class: $object::class);

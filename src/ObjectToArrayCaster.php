@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\Attributes\Service;
+use Medas\Core\{Attributes\Service, Interfaces\PropertyHandler};
+use Medas\EntityManager\Attributes\Handler;
 
 #[Service]
 readonly class ObjectToArrayCaster
@@ -60,7 +61,15 @@ readonly class ObjectToArrayCaster
                     continue;
                 }
 
-                $values[$reflectionProperty->name] = $reflectionProperty->getValue($object);
+                $value = $reflectionProperty->getValue($object);
+
+                if ($handlerAttribute = attribute(Handler::class, $reflectionProperty)) {
+                    /** @var PropertyHandler $handler */
+                    $handler = \service($handlerAttribute->className);
+                    $value = $handler->serialize($value);
+                }
+
+                $values[$reflectionProperty->name] = $value;
             }
         }
 

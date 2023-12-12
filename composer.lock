@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e54d9fa4d2e191f7e5896f383edd12b",
+    "content-hash": "c4f3b9191a6fbff9cda6cc7973f7dac3",
     "packages": [
         {
             "name": "morphp/medas-console",
@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "f3688fb67e43731422c3c684c72143413f489ecc"
+                "reference": "b2c61348991fe2719c9e13a9bbd2a371913bdc47"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/f3688fb67e43731422c3c684c72143413f489ecc",
-                "reference": "f3688fb67e43731422c3c684c72143413f489ecc",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/b2c61348991fe2719c9e13a9bbd2a371913bdc47",
+                "reference": "b2c61348991fe2719c9e13a9bbd2a371913bdc47",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-12-04T15:01:01+00:00"
+            "time": "2023-12-12T10:09:41+00:00"
         },
         {
             "name": "morphp/medas-php-class-analysis",
@@ -305,6 +305,53 @@
                 }
             ],
             "time": "2022-12-30T00:23:10+00:00"
+        },
+        {
+            "name": "morphp/medas-entity-manager",
+            "version": "dev-dev",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:tarantuli/medas-entity-manager.git",
+                "reference": "8bad21ce7dae50bc2d274dcc94a2344f9efe7756"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tarantuli/medas-entity-manager/zipball/8bad21ce7dae50bc2d274dcc94a2344f9efe7756",
+                "reference": "8bad21ce7dae50bc2d274dcc94a2344f9efe7756",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "morphp/medas-console": "dev-dev",
+                "morphp/medas-core": "dev-dev",
+                "morphp/medas-service-manager": "dev-dev"
+            },
+            "require-dev": {
+                "morphp/medas-config-manager": "dev-dev",
+                "morphp/medas-config-options": "dev-dev",
+                "morphp/medas-events": "dev-dev",
+                "morphp/medas-file-system": "dev-dev",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Medas\\EntityManager\\": "src/",
+                    "Medas\\EntityManagerTest\\": "tests/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Patrick Morpey",
+                    "email": "patrick@morphp.nl"
+                }
+            ],
+            "description": "Medas entity manager",
+            "support": {
+                "source": "https://github.com/tarantuli/medas-entity-manager/tree/dev",
+                "issues": "https://github.com/tarantuli/medas-entity-manager/issues"
+            },
+            "time": "2023-12-12T10:10:46+00:00"
         },
         {
             "name": "morphp/medas-object-instantiator",
@@ -2062,6 +2109,7 @@
     "stability-flags": {
         "morphp/medas-core": 20,
         "morphp/medas-php-class-analysis": 20,
+        "morphp/medas-entity-manager": 20,
         "morphp/medas-service-manager": 20
     },
     "prefer-stable": true,

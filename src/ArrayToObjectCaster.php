@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\Attributes\Service;
+use Medas\Core\{Attributes\Service, Interfaces\PropertyHandler};
+use Medas\EntityManager\Attributes\Handler;
 use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
 
 #[Service]
@@ -25,19 +26,27 @@ readonly class ArrayToObjectCaster
 
         foreach ($values as $propertyName => $value) {
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
-            $types = propertyTypes($reflectionProperty);
 
-            if ($reflectionProperty->getType()?->allowsNull() && $value === null) {
-                // Do nothing
+            if ($handlerAttribute = attribute(Handler::class, $reflectionProperty)) {
+                /** @var PropertyHandler $handler */
+                $handler = \service($handlerAttribute->className);
+                $value = $handler->unserialize($value);
             }
-            elseif (count($types) === 1) {
-                $typeName = $types[0]->getName();
+            else {
+                $types = propertyTypes($reflectionProperty);
 
-                if ($typeName === 'array' && is_iterable($value)) {
-                    $this->castArrayMembers($reflectionProperty, $reflectionClass, $value);
+                if ($reflectionProperty->getType()?->allowsNull() && $value === null) {
+                    // Do nothing
                 }
+                elseif (count($types) === 1) {
+                    $typeName = $types[0]->getName();
 
-                $this->checkValueType($value, $typeName);
+                    if ($typeName === 'array' && is_iterable($value)) {
+                        $this->castArrayMembers($reflectionProperty, $reflectionClass, $value);
+                    }
+
+                    $this->checkValueType($value, $typeName);
+                }
             }
 
             if (!$reflectionProperty->isReadOnly() || !$reflectionProperty->isInitialized($object)) {

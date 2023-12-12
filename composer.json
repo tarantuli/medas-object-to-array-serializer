@@ -15,6 +15,7 @@
         "morphp/medas-php-class-analysis": "dev-dev"
     },
     "require-dev": {
+        "morphp/medas-entity-manager": "dev-dev",
         "morphp/medas-service-manager": "dev-dev",
         "phpunit/phpunit": "^9.5"
     },
