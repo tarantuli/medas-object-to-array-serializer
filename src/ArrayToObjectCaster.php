@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\{Attributes\Service, Interfaces\PropertyHandler};
-use Medas\EntityManager\Attributes\Handler;
+use Medas\Core\{Attributes\Handler, Attributes\Service, Interfaces\PropertyHandler};
 use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
 
 #[Service]

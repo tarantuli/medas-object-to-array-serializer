@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializerTest\MockUps\PropertyHandlers;
 
-use Medas\EntityManager\Attributes\Handler;
+use Medas\Core\Attributes\Handler;
 
 class WithPropertyHandler
 {
