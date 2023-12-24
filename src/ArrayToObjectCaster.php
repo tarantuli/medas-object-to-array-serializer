@@ -56,43 +56,6 @@ readonly class ArrayToObjectCaster
         return $object;
     }
 
-    private function checkValueType(mixed &$value, string $typeName): void
-    {
-        if ($typeName === 'mixed') {
-            return;
-        }
-
-        if (get_debug_type($value) === $typeName) {
-            // The value already has the right type
-            return;
-        }
-
-        if (is_array($value) && class_exists($typeName)) {
-            if (enum_exists($typeName)) {
-                $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
-            }
-            else {
-                $value = $this->cast($value, $typeName);
-            }
-
-            return;
-        }
-
-        if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
-            $constructor = (new \ReflectionClass($value))->getConstructor();
-
-            if ($constructor && $constructor->getNumberOfParameters() >= 1) {
-                throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);
-            }
-
-            $value = new $value();
-
-            return;
-        }
-
-        throw new Exceptions\CantCastValueToType($value, $typeName);
-    }
-
     private function castArrayMembers(
         \ReflectionProperty $reflectionProperty,
         \ReflectionClass    $reflectionClass,
@@ -144,6 +107,43 @@ readonly class ArrayToObjectCaster
         }
 
         return $fqcn;
+    }
+
+    private function checkValueType(mixed &$value, string $typeName): void
+    {
+        if ($typeName === 'mixed') {
+            return;
+        }
+
+        if (get_debug_type($value) === $typeName) {
+            // The value already has the right type
+            return;
+        }
+
+        if (is_array($value) && class_exists($typeName)) {
+            if (enum_exists($typeName)) {
+                $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
+            }
+            else {
+                $value = $this->cast($value, $typeName);
+            }
+
+            return;
+        }
+
+        if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
+            $constructor = (new \ReflectionClass($value))->getConstructor();
+
+            if ($constructor && $constructor->getNumberOfParameters() >= 1) {
+                throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);
+            }
+
+            $value = new $value();
+
+            return;
+        }
+
+        throw new Exceptions\CantCastValueToType($value, $typeName);
     }
 
     private function getEnumValue(array $value, \ReflectionEnum $enum): \UnitEnum
