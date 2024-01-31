@@ -48,6 +48,10 @@ readonly class ObjectToArrayCaster
 
         foreach ([true, false] as $promotionState) {
             foreach ((new \ReflectionClass($object))->getProperties() as $reflectionProperty) {
+                if ($reflectionProperty->isStatic()) {
+                    continue;
+                }
+
                 if ($reflectionProperty->isPromoted() !== $promotionState) {
                     continue;
                 }
