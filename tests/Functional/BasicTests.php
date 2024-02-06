@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializerTest\Functional;
 
 use Medas\ObjectToArraySerializer\Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments;
-use Medas\ObjectToArraySerializerTest\MockUps\{
-    ArrayOfChildren,
+use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     ArrayOfEnums,
     ArrayOfInternalTypes,
     BasicClass,
@@ -16,6 +15,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{
     Directory\RelativeChild,
     ElevatedProperties,
     EmbeddedClass,
+    EmptyValues,
     EnumProperties,
     Enums\IntBackedEnum,
     Enums\StringBackedEnum,
@@ -28,8 +28,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{
     PropertyToSkip,
     TemplateTypes\TemplateExtendingClass,
     WithConstructors\HolderOfIllegalClasses,
-    WithConstructors\HolderOfLegalClasses
-};
+    WithConstructors\HolderOfLegalClasses};
 
 class BasicTests extends BaseTestClass
 {
@@ -165,6 +164,13 @@ class BasicTests extends BaseTestClass
     {
         $object = new WithPropertyHandler();
         $object->properties = [1, 2, 3, 4];
+
+        $this->executeTest($object);
+    }
+
+    public function testEmptyValues(): void
+    {
+        $object = new EmptyValues();
 
         $this->executeTest($object);
     }

@@ -44,6 +44,11 @@ readonly class ObjectToArrayCaster
 
     private function castToArray(object $object): array
     {
+        $dontSerializeEmptyValues = attribute(
+            DontSerializeEmptyValues::class,
+            new \ReflectionClass($object)
+        );
+
         $values = [];
 
         foreach ([true, false] as $promotionState) {
@@ -70,6 +75,10 @@ readonly class ObjectToArrayCaster
                     /** @var PropertyHandler $handler */
                     $handler = \service($handlerAttribute->className);
                     $value = $handler->serialize($value);
+                }
+
+                if ($dontSerializeEmptyValues && empty($value)) {
+                    continue;
                 }
 
                 $values[$reflectionProperty->name] = $value;
