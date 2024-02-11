@@ -77,7 +77,7 @@ readonly class ObjectToArrayCaster
                     $value = $handler->serialize($value);
                 }
 
-                if ($dontSerializeEmptyValues && empty($value)) {
+                if ($dontSerializeEmptyValues && empty($value) && $value !== '0') {
                     continue;
                 }
 
