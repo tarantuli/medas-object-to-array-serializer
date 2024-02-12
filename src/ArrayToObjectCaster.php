@@ -18,12 +18,20 @@ readonly class ArrayToObjectCaster
     {
     }
 
-    public function cast(array $values, string $className): object
+    public function cast(array $values, string $className, bool $skipUnknownValues = true): object
     {
         $reflectionClass = new \ReflectionClass($className);
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
         foreach ($values as $propertyName => $value) {
+            if (!$reflectionClass->hasProperty($propertyName)) {
+                if ($skipUnknownValues) {
+                    continue;
+                }
+
+                throw new Exceptions\PropertyDoesNotExist($object, $propertyName);
+            }
+
             $reflectionProperty = $reflectionClass->getProperty($propertyName);
 
             if ($handlerAttribute = attribute(Handler::class, $reflectionProperty)) {
