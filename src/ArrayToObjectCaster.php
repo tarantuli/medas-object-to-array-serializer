@@ -123,8 +123,16 @@ readonly class ArrayToObjectCaster
             return;
         }
 
-        if (get_debug_type($value) === $typeName) {
+        $currentType = get_debug_type($value);
+
+        if ($currentType === $typeName) {
             // The value already has the right type
+            return;
+        }
+
+        if ($currentType === 'int' && $typeName === 'float') {
+            $value = (float) $value;
+
             return;
         }
 
