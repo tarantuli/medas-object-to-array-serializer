@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\{Attributes\Handler, Attributes\Service, Interfaces\PropertyHandler};
+use Medas\Core\{
+    Attributes\Entrypoint,
+    Attributes\Handler,
+    Attributes\Service,
+    Interfaces\PropertyHandler
+};
 
-#[Service]
+#[Service, Entrypoint]
 readonly class ObjectToArrayCaster
 {
     public function __construct(

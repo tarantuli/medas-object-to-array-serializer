@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\{Attributes\Service, Interfaces\Serializer, Interfaces\Type};
+use Medas\Core\{Attributes\Entrypoint, Attributes\Service, Interfaces\Serializer, Interfaces\Type};
 
-#[Service]
+#[Service, Entrypoint]
 readonly class ObjectToArraySerializer implements Serializer
 {
     public function __construct(
@@ -16,6 +16,9 @@ readonly class ObjectToArraySerializer implements Serializer
     {
     }
 
+    /**
+     * Transforms the given object into an array of values.
+     */
     public function serialize(mixed $value): array
     {
         if (!is_object($value)) {
@@ -25,6 +28,9 @@ readonly class ObjectToArraySerializer implements Serializer
         return $this->objectToArrayCaster->cast($value);
     }
 
+    /**
+     * Transforms the given array of values back into an object of the given class name.
+     */
     public function unserialize(mixed $value, Type $type = null, string $class = null): object
     {
         if (!is_array($value)) {
