@@ -11,21 +11,23 @@ use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
 readonly class ArrayToObjectCaster
 {
     public function __construct(
-        private ClassAnalyser                     $classAnalyser,
-        private SerializeToClassName\ClassManager $serializeToClassNameManager,
-        private TemplateTypeFinder                $templateTypeFinder,
+        private ArrayToObjectCaster\SettingsFactory $settingsFactory,
+        private ClassAnalyser                       $classAnalyser,
+        private SerializeToClassName\ClassManager   $serializeToClassNameManager,
+        private TemplateTypeFinder                  $templateTypeFinder,
     )
     {
     }
 
-    public function cast(array $values, string $className, bool $skipUnknownValues = true): object
+    public function cast(array $values, string $className, ArrayToObjectCaster\Settings $settings = null): object
     {
+        $settings ??= $this->settingsFactory->create();
         $reflectionClass = new \ReflectionClass($className);
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
         foreach ($values as $propertyName => $value) {
             if (!$reflectionClass->hasProperty($propertyName)) {
-                if ($skipUnknownValues) {
+                if ($settings->skipUnknownValues) {
                     continue;
                 }
 
