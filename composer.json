@@ -1,6 +1,9 @@
 {
     "name": "morphp/medas-object-to-array-serializer",
     "description": "Medas object to array serializer",
+    "keywords": [
+        "data manipulation"
+    ],
     "authors": [
         {
             "name": "Patrick Morpey",
