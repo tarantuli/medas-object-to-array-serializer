@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\{Attributes\Entrypoint, Attributes\Service, Interfaces\Serializer, Interfaces\Type};
+use Medas\Core\{
+    Attributes\Entrypoint,
+    Attributes\RequiredButUnused,
+    Attributes\Service,
+    Interfaces\Serializer,
+    Interfaces\Type
+};
 
 #[Service, Entrypoint]
 readonly class ObjectToArraySerializer implements Serializer
@@ -31,7 +37,7 @@ readonly class ObjectToArraySerializer implements Serializer
     /**
      * Transforms the given array of values back into an object of the given class name.
      */
-    public function unserialize(mixed $value, Type $type = null, string $class = null): object
+    public function unserialize(mixed $value, #[RequiredButUnused] Type $type = null, string $class = null): object
     {
         if (!is_array($value)) {
             throw new Exceptions\ValueMustBeArray($value);
