@@ -143,13 +143,14 @@ readonly class ArrayToObjectCaster
             return;
         }
 
+        if (enum_exists($typeName)) {
+            $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
+
+            return;
+        }
+
         if (is_array($value) && class_exists($typeName)) {
-            if (enum_exists($typeName)) {
-                $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
-            }
-            else {
-                $value = $this->cast($value, $typeName);
-            }
+            $value = $this->cast($value, $typeName);
 
             return;
         }
@@ -169,8 +170,8 @@ readonly class ArrayToObjectCaster
         throw new Exceptions\CantCastValueToType($value, $typeName);
     }
 
-    private function getEnumValue(array $value, \ReflectionEnum $enum): \UnitEnum
+    private function getEnumValue(string $value, \ReflectionEnum $enum): \UnitEnum
     {
-        return $enum->getCase($value['name'])->getValue();
+        return $enum->getCase($value)->getValue();
     }
 }

@@ -38,6 +38,9 @@ readonly class ObjectToArrayCaster
                 if ($this->serializeToClassNameManager->shouldSerializeToClassName($nodeValue::class)) {
                     $nodeValue = $nodeValue::class;
                 }
+                elseif ($nodeValue instanceof \UnitEnum) {
+                    $nodeValue = $nodeValue->name;
+                }
                 else {
                     $nodeValue = $this->castToArray($nodeValue);
                 }

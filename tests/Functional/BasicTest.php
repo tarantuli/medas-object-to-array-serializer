@@ -30,7 +30,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     WithConstructors\HolderOfIllegalClasses,
     WithConstructors\HolderOfLegalClasses};
 
-class BasicTests extends BaseTestClass
+class BasicTest extends BaseTestClass
 {
     public function testBasicClass(): void
     {
