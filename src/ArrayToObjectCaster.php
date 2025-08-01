@@ -170,8 +170,10 @@ readonly class ArrayToObjectCaster
         throw new Exceptions\CantCastValueToType($value, $typeName);
     }
 
-    private function getEnumValue(string $value, \ReflectionEnum $enum): \UnitEnum
+    private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
     {
-        return $enum->getCase($value)->getValue();
+        return $enum->isBacked()
+            ? array_filter($enum->getCases(), fn($case) => $case->getBackingValue() === $value)[0]
+            : $enum->getCase($value)->getValue();
     }
 }
