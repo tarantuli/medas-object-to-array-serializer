@@ -173,7 +173,7 @@ readonly class ArrayToObjectCaster
     private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
     {
         return $enum->isBacked()
-            ? array_filter($enum->getCases(), fn($case) => $case->getBackingValue() === $value)[0]
+            ? array_values(array_filter($enum->getCases(), fn($case) => $case->getBackingValue() === $value))[0]->getValue()
             : $enum->getCase($value)->getValue();
     }
 }
