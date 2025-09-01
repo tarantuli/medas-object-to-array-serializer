@@ -24,6 +24,12 @@ readonly class ArrayToObjectCaster
     {
     }
 
+    /**
+     * The return value is an object of type `$className`.
+     */
+    /*
+     * This is specified in PhpStorm in .phpstorm.meta.php
+     */
     public function cast(array $values, string $className, ArrayToObjectCaster\Settings $settings = null): object
     {
         $settings ??= $this->settingsFactory->create();
