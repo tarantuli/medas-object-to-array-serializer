@@ -65,7 +65,14 @@ readonly class ArrayToObjectCaster
                         $this->castArrayMembers($reflectionProperty, $reflectionClass, $value);
                     }
 
-                    $this->checkValueType($value, $typeName);
+                    if (!$this->checkValueType($value, $typeName)) {
+                        throw new Exceptions\CantCastValueToType(
+                            $className,
+                            $propertyName,
+                            $value,
+                            $typeName
+                        );
+                    }
                 }
             }
 
@@ -90,7 +97,14 @@ readonly class ArrayToObjectCaster
         }
 
         foreach ($value as &$child) {
-            $this->checkValueType($child, $arrayType);
+            if (!$this->checkValueType($child, $arrayType)) {
+                throw new Exceptions\CantCastValueToType(
+                    $reflectionClass->name,
+                    $reflectionProperty->name,
+                    $value,
+                    $arrayType
+                );
+            }
         }
     }
 
@@ -130,35 +144,35 @@ readonly class ArrayToObjectCaster
         return $fqcn;
     }
 
-    private function checkValueType(mixed &$value, string $typeName): void
+    private function checkValueType(mixed &$value, string $typeName): bool
     {
         if ($typeName === 'mixed') {
-            return;
+            return true;
         }
 
         $currentType = get_debug_type($value);
 
         if ($currentType === $typeName) {
             // The value already has the right type
-            return;
+            return true;
         }
 
         if ($currentType === 'int' && $typeName === 'float') {
             $value = (float) $value;
 
-            return;
+            return true;
         }
 
         if (enum_exists($typeName)) {
             $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
 
-            return;
+            return true;
         }
 
         if (is_array($value) && class_exists($typeName)) {
             $value = $this->cast($value, $typeName);
 
-            return;
+            return true;
         }
 
         if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
@@ -170,10 +184,10 @@ readonly class ArrayToObjectCaster
 
             $value = new $value();
 
-            return;
+            return true;
         }
 
-        throw new Exceptions\CantCastValueToType($value, $typeName);
+        return false;
     }
 
     private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
