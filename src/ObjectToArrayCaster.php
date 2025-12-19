@@ -63,7 +63,7 @@ readonly class ObjectToArrayCaster
         $values = [];
 
         foreach ([true, false] as $promotionState) {
-            foreach ((new \ReflectionClass($object))->getProperties() as $reflectionProperty) {
+            foreach (new \ReflectionClass($object)->getProperties() as $reflectionProperty) {
                 if ($reflectionProperty->isStatic()) {
                     continue;
                 }

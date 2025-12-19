@@ -30,7 +30,11 @@ readonly class ArrayToObjectCaster
     /*
      * This is specified in PhpStorm in .phpstorm.meta.php
      */
-    public function cast(array $values, string $className, ArrayToObjectCaster\Settings $settings = null): object
+    public function cast(
+        array                             $values,
+        string                            $className,
+        ArrayToObjectCaster\Settings|null $settings = null
+    ): object
     {
         $settings ??= $this->settingsFactory->create();
         $reflectionClass = new \ReflectionClass($className);
@@ -176,7 +180,7 @@ readonly class ArrayToObjectCaster
         }
 
         if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
-            $constructor = (new \ReflectionClass($value))->getConstructor();
+            $constructor = new \ReflectionClass($value)->getConstructor();
 
             if ($constructor && $constructor->getNumberOfParameters() >= 1) {
                 throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);

@@ -16,8 +16,8 @@ use Medas\Core\{
 readonly class ObjectToArraySerializer implements Serializer
 {
     public function __construct(
-        private ObjectToArrayCaster $objectToArrayCaster,
         private ArrayToObjectCaster $arrayToObjectCaster,
+        private ObjectToArrayCaster $objectToArrayCaster,
     )
     {
     }
@@ -37,7 +37,13 @@ readonly class ObjectToArraySerializer implements Serializer
     /**
      * Transforms the given array of values back into an object of the given class name.
      */
-    public function unserialize(mixed $value, #[RequiredButUnused] Type $type = null, string $class = null): object
+    public function unserialize(
+        mixed       $value,
+
+        #[RequiredButUnused]
+        Type|null   $type = null,
+        string|null $class = null
+    ): object
     {
         if (!is_array($value)) {
             throw new Exceptions\ValueMustBeArray($value);
