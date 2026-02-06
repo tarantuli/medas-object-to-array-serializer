@@ -180,7 +180,7 @@ readonly class ArrayToObjectCaster
         }
 
         if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
-            $constructor = new \ReflectionClass($value)->getConstructor();
+            $constructor = (new \ReflectionClass($value))->getConstructor();
 
             if ($constructor && $constructor->getNumberOfParameters() >= 1) {
                 throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);
