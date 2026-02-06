@@ -14,7 +14,8 @@
   "type": "library",
   "require": {
     "morphp/medas-core": "^2",
-    "morphp/medas-php-class-analysis": "^2"
+    "morphp/medas-php-class-analysis": "^2",
+    "php": "^8.4"
   },
   "require-dev": {
     "morphp/medas-entity-manager": "^2",
