@@ -1,31 +1,30 @@
 {
-    "name": "morphp/medas-object-to-array-serializer",
-    "description": "Medas object to array serializer",
-    "keywords": [
-        "data manipulation"
-    ],
-    "authors": [
-        {
-            "name": "Patrick Morpey",
-            "email": "patrick@morphp.nl"
-        }
-    ],
-    "type": "library",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require": {
-        "morphp/medas-core": "dev-dev",
-        "morphp/medas-php-class-analysis": "dev-dev"
-    },
-    "require-dev": {
-        "morphp/medas-entity-manager": "dev-dev",
-        "morphp/medas-service-manager": "dev-dev",
-        "phpunit/phpunit": "^9.5"
-    },
-    "autoload": {
-        "psr-4": {
-            "Medas\\ObjectToArraySerializer\\": "src/",
-            "Medas\\ObjectToArraySerializerTest\\": "tests/"
-        }
+  "name": "morphp/medas-object-to-array-serializer",
+  "description": "Medas object to array serializer",
+  "version": "2.0.0",
+  "keywords": [
+    "data manipulation"
+  ],
+  "authors": [
+    {
+      "name": "Patrick Morpey",
+      "email": "patrick@morphp.nl"
     }
+  ],
+  "type": "library",
+  "require": {
+    "morphp/medas-core": "^2",
+    "morphp/medas-php-class-analysis": "^2"
+  },
+  "require-dev": {
+    "morphp/medas-entity-manager": "^2",
+    "morphp/medas-service-manager": "^2",
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Medas\\ObjectToArraySerializer\\": "src/",
+      "Medas\\ObjectToArraySerializerTest\\": "tests/"
+    }
+  }
 }
