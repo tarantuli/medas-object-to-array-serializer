@@ -6,7 +6,7 @@ namespace Medas\ObjectToArraySerializer\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class ClassNameMustBeString extends BaseException
+class ClassNameMustBeValidAndExisting extends BaseException
 {
     public function __construct(string|null $className)
     {

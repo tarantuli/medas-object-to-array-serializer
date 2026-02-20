@@ -50,7 +50,7 @@ readonly class ObjectToArraySerializer implements Serializer
         }
 
         if ($class === null || !class_exists($class)) {
-            throw new Exceptions\ClassNameMustBeString($class);
+            throw new Exceptions\ClassNameMustBeValidAndExisting($class);
         }
 
         return $this->arrayToObjectCaster->cast($value, $class);

@@ -25,7 +25,7 @@ abstract class BaseTestClass extends TestCase
         self::assertNotEqualsCanonicalizing($object, $unserialized);
     }
 
-    public function serializeThenUnserialize(object $object): string|object
+    public function serializeThenUnserialize(object $object): object
     {
         $serializer = service(ObjectToArraySerializer::class);
         $serialized = $serializer->serialize($object);

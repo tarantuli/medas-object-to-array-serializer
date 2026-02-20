@@ -55,15 +55,13 @@ readonly class ObjectToArrayCaster
 
     private function castToArray(object $object): array
     {
-        $dontSerializeEmptyValues = attribute(
-            DontSerializeEmptyValues::class,
-            new \ReflectionClass($object)
-        );
-
+        $reflectionClass = new \ReflectionClass($object);
+        $dontSerializeEmptyValues = attribute(DontSerializeEmptyValues::class, $reflectionClass);
         $values = [];
 
+        // This loop is to make sure that promoted properties are serialized first
         foreach ([true, false] as $promotionState) {
-            foreach (new \ReflectionClass($object)->getProperties() as $reflectionProperty) {
+            foreach ($reflectionClass->getProperties() as $reflectionProperty) {
                 if ($reflectionProperty->isStatic()) {
                     continue;
                 }
@@ -81,6 +79,10 @@ readonly class ObjectToArrayCaster
                 }
 
                 $value = $reflectionProperty->getValue($object);
+
+                if ($value instanceof \Closure) {
+                    continue;
+                }
 
                 if ($handlerAttribute = attribute(Handler::class, $reflectionProperty)) {
                     /** @var PropertyHandler $handler */

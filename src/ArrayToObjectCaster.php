@@ -10,16 +10,13 @@ use Medas\Core\{
     Attributes\Service,
     Interfaces\PropertyHandler
 };
-use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
 
 #[Service, Entrypoint]
 readonly class ArrayToObjectCaster
 {
     public function __construct(
         private ArrayToObjectCaster\SettingsFactory $settingsFactory,
-        private ClassAnalyser                       $classAnalyser,
-        private SerializeToClassName\ClassManager   $serializeToClassNameManager,
-        private TemplateTypeFinder                  $templateTypeFinder,
+        private ValueCaster                         $valueCaster,
     )
     {
     }
@@ -66,10 +63,15 @@ readonly class ArrayToObjectCaster
                     $typeName = $types[0]->getName();
 
                     if ($typeName === 'array' && is_iterable($value)) {
-                        $this->castArrayMembers($reflectionProperty, $reflectionClass, $value);
+                        $this->valueCaster->castArrayMembers(
+                            $this,
+                            $reflectionProperty,
+                            $reflectionClass,
+                            $value
+                        );
                     }
 
-                    if (!$this->checkValueType($value, $typeName)) {
+                    if (!$this->valueCaster->checkValueType($this, $value, $typeName)) {
                         throw new Exceptions\CantCastValueToType(
                             $className,
                             $propertyName,
@@ -77,6 +79,9 @@ readonly class ArrayToObjectCaster
                             $typeName
                         );
                     }
+                }
+                else {
+                    throw new Exceptions\CastingToUnionTypesIsNotImplemented($reflectionProperty);
                 }
             }
 
@@ -86,118 +91,5 @@ readonly class ArrayToObjectCaster
         }
 
         return $object;
-    }
-
-    private function castArrayMembers(
-        \ReflectionProperty $reflectionProperty,
-        \ReflectionClass    $reflectionClass,
-        mixed               &$value
-    ): void
-    {
-        $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
-
-        if (!in_array($arrayType, PhpKeywords::INTERNAL_TYPES)) {
-            $arrayType = $this->referenceToFqcn($arrayType, $reflectionClass);
-        }
-
-        foreach ($value as &$child) {
-            if (!$this->checkValueType($child, $arrayType)) {
-                throw new Exceptions\CantCastValueToType(
-                    $reflectionClass->name,
-                    $reflectionProperty->name,
-                    $value,
-                    $arrayType
-                );
-            }
-        }
-    }
-
-    private function findArrayType(\ReflectionClass $reflectionClass, \ReflectionProperty $reflectionProperty): string
-    {
-        $doccomment = $reflectionProperty->getDocComment();
-
-        if ($doccomment === false) {
-            throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
-        }
-
-        if (preg_match('/@var\s+([\w\\\]+)\[]/', $doccomment, $match)) {
-            return $match[1];
-        }
-
-        if (preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
-                && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)) {
-            return $type;
-        }
-
-        throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
-    }
-
-    private function referenceToFqcn(string $childClass, \ReflectionClass $reflectionClass): string
-    {
-        if (str_starts_with($childClass, '\\')) {
-            return $childClass;
-        }
-
-        $analysis = $this->classAnalyser->analyseClass($reflectionClass);
-        $fqcn = $analysis->resolveImport($childClass);
-
-        if ($fqcn === null) {
-            $fqcn = ($analysis->namespace ? $analysis->namespace . '\\' : '') . $childClass;
-        }
-
-        return $fqcn;
-    }
-
-    private function checkValueType(mixed &$value, string $typeName): bool
-    {
-        if ($typeName === 'mixed') {
-            return true;
-        }
-
-        $currentType = get_debug_type($value);
-
-        if ($currentType === $typeName) {
-            // The value already has the right type
-            return true;
-        }
-
-        if ($currentType === 'int' && $typeName === 'float') {
-            $value = (float) $value;
-
-            return true;
-        }
-
-        if (enum_exists($typeName)) {
-            $value = $this->getEnumValue($value, new \ReflectionEnum($typeName));
-
-            return true;
-        }
-
-        if (is_array($value) && class_exists($typeName)) {
-            $value = $this->cast($value, $typeName);
-
-            return true;
-        }
-
-        if (is_string($value) && $this->serializeToClassNameManager->shouldSerializeToClassName($typeName)) {
-            $constructor = new \ReflectionClass($value)->getConstructor();
-
-            if ($constructor && $constructor->getNumberOfParameters() >= 1) {
-                throw new Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments($value);
-            }
-
-            $value = new $value();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
-    {
-        return $enum->isBacked()
-            ? array_values(array_filter($enum->getCases(), fn($case) => $case->getBackingValue() === $value))[0]->getValue()
-            : $enum->getCase($value)->getValue();
     }
 }
