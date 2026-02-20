@@ -62,7 +62,7 @@ readonly class ArrayToObjectCaster
                 elseif (count($types) === 1) {
                     $typeName = $types[0]->getName();
 
-                    if ($typeName === 'array' && is_iterable($value)) {
+                    if ($typeName === 'array' && is_array($value)) {
                         $this->valueCaster->castArrayMembers(
                             $this,
                             $reflectionProperty,

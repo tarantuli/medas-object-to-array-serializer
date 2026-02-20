@@ -15,6 +15,6 @@ class ArraysMustSpecifyContentType extends BaseException
 
     public function pattern(): string
     {
-        return 'array property %s must specify the type of its content in its doccomment as "@var TypeName[]"';
+        return 'array property %s must specify the type of its content in its doccomment as "@var TypeName[]" or "@var array<TypeName>"';
     }
 }

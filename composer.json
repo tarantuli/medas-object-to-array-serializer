@@ -1,7 +1,6 @@
 {
   "name": "morphp/medas-object-to-array-serializer",
   "description": "Medas object to array serializer",
-  "version": "2.0.0",
   "keywords": [
     "data manipulation"
   ],
@@ -13,14 +12,14 @@
   ],
   "type": "library",
   "require": {
-    "morphp/medas-core": "^2",
-    "morphp/medas-php-class-analysis": "^2",
+    "morphp/medas-core": "^3",
+    "morphp/medas-php-class-analysis": "^3",
     "php": "^8.4"
   },
   "require-dev": {
-    "morphp/medas-entity-manager": "^2",
-    "morphp/medas-service-manager": "^2",
-    "phpunit/phpunit": "^9.5"
+    "morphp/medas-entity-manager": "^3",
+    "morphp/medas-service-manager": "^3",
+    "phpunit/phpunit": "^10"
   },
   "autoload": {
     "psr-4": {

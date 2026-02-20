@@ -27,6 +27,71 @@ readonly class ValueCaster
     {
         $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
 
+        $this->castArrayByType(
+            $arrayToObjectCaster,
+            $value,
+            $arrayType,
+            $reflectionClass,
+            $reflectionProperty
+        );
+    }
+
+    private function findArrayType(\ReflectionClass $reflectionClass, \ReflectionProperty $reflectionProperty): string
+    {
+        $doccomment = $reflectionProperty->getDocComment();
+
+        if ($doccomment === false) {
+            throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
+        }
+
+        // Match TypeName[], TypeName[][], etc. — capture everything up to the final []
+        if (preg_match('/@var\s+([\w\\\\]+(?:\[])*)\[]/', $doccomment, $match)) {
+            return $match[1];
+        }
+
+        if (preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
+                && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)) {
+            return $type;
+        }
+
+        throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
+    }
+
+    private function castArrayByType(
+        ArrayToObjectCaster $arrayToObjectCaster,
+        mixed               &$value,
+        string              $arrayType,
+        \ReflectionClass    $reflectionClass,
+        \ReflectionProperty $reflectionProperty
+    ): void
+    {
+        if (str_ends_with($arrayType, '[]')) {
+            // Nested array type (e.g. SomeClass[]): strip one level of [] and recurse into each child array
+            $innerType = substr($arrayType, 0, -2);
+
+            foreach ($value as &$child) {
+                if (!is_array($child)) {
+                    throw new Exceptions\CantCastValueToType(
+                        $reflectionClass->name,
+                        $reflectionProperty->name,
+                        $child,
+                        $arrayType
+                    );
+                }
+
+                $this->castArrayByType(
+                    $arrayToObjectCaster,
+                    $child,
+                    $innerType,
+                    $reflectionClass,
+                    $reflectionProperty
+                );
+            }
+
+            return;
+        }
+
+        // Leaf type: resolve FQCN if needed, then cast each element
         if (!in_array($arrayType, PhpKeywords::INTERNAL_TYPES)) {
             $arrayType = $this->referenceToFqcn($arrayType, $reflectionClass);
         }
@@ -41,26 +106,6 @@ readonly class ValueCaster
                 );
             }
         }
-    }
-
-    private function findArrayType(\ReflectionClass $reflectionClass, \ReflectionProperty $reflectionProperty): string
-    {
-        $doccomment = $reflectionProperty->getDocComment();
-
-        if ($doccomment === false) {
-            throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
-        }
-
-        if (preg_match('/@var\s+([\w\\\]+)\[]/', $doccomment, $match)) {
-            return $match[1];
-        }
-
-        if (preg_match('/@var\s+array<(?:\w+, )?(\w+)>/', $doccomment, $match)
-                && $type = $this->templateTypeFinder->find($match[1], $reflectionClass)) {
-            return $type;
-        }
-
-        throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
     }
 
     private function referenceToFqcn(string $childClass, \ReflectionClass $reflectionClass): string
@@ -127,6 +172,7 @@ readonly class ValueCaster
 
     private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
     {
+        /** @var class-string<\BackedEnum> $enumClass */
         $enumClass = $enum->getName();
 
         return $enum->isBacked() ? $enumClass::from($value) : $enum->getCase($value)->getValue();
