@@ -23,7 +23,11 @@
   },
   "autoload": {
     "psr-4": {
-      "Medas\\ObjectToArraySerializer\\": "src/",
+      "Medas\\ObjectToArraySerializer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "Medas\\ObjectToArraySerializerTest\\": "tests/"
     }
   }

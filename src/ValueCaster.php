@@ -66,7 +66,7 @@ readonly class ValueCaster
     ): void
     {
         if (str_ends_with($arrayType, '[]')) {
-            // Nested array type (e.g. SomeClass[]): strip one level of [] and recurse into each child array
+            // Nested array type (e.g., SomeClass[]): strip one level of [] and recurse into each child array
             $innerType = substr($arrayType, 0, -2);
 
             foreach ($value as &$child) {

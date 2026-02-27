@@ -70,7 +70,7 @@ readonly class TemplateTypeFinder
                     return preg_split('/, ?/', $match[1]);
                 }
 
-                // Found the named parent but it has no @template — no point going further
+                // Found the named parent, but it has no @template — no point going further
                 return null;
             }
 
