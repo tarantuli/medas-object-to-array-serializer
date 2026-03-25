@@ -20,19 +20,35 @@ readonly class ObjectToArrayCaster
     {
     }
 
-    public function cast(object $value): array
+    public function cast(object $value, array $castObjects = []): array
     {
+        $objectId = spl_object_id($value);
+
+        if (array_key_exists($objectId, $castObjects)) {
+            return ["recursion" => $castObjects[$objectId]];
+        }
+
+        $castObjects[$objectId] = count($castObjects);
         $value = $this->castToArray($value);
 
         // Recursively cast child values to arrays as well
         do {
             $foundObject = false;
 
-            array_walk_recursive($value, function (&$nodeValue) use (&$foundObject) {
+            array_walk_recursive($value, function (&$nodeValue) use (&$foundObject, &$castObjects) {
                 if (!is_object($nodeValue) || $nodeValue instanceof \Closure) {
                     return;
                 }
 
+                $objectId = spl_object_id($nodeValue);
+
+                if (array_key_exists($objectId, $castObjects)) {
+                    $nodeValue = ["recursion" => $castObjects[$objectId]];
+
+                    return;
+                }
+
+                $castObjects[$objectId] = count($castObjects);
                 $foundObject = true;
 
                 if ($this->serializeToClassNameManager->shouldSerializeToClassName($nodeValue::class)) {

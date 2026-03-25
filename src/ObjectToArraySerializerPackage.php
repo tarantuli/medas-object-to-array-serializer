@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\AsSingleton;
-use Medas\Core\BasePackage;
+use Medas\Core\{AsSingleton, BasePackage};
 use Medas\PhpClassAnalysis\PhpClassAnalysisPackage;
 
 class ObjectToArraySerializerPackage extends BasePackage
