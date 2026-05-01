@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\Attributes\Service;
-use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords};
+use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords, ReferenceFinder\ReferenceResolver};
 
 #[Service]
 readonly class ValueCaster
 {
     public function __construct(
         private ClassAnalyser                     $classAnalyser,
+        private ReferenceResolver                 $referenceResolver,
         private SerializeToClassName\ClassManager $serializeToClassNameManager,
         private TemplateTypeFinder                $templateTypeFinder,
     )
@@ -115,7 +116,7 @@ readonly class ValueCaster
         }
 
         $analysis = $this->classAnalyser->analyseClass($reflectionClass);
-        $fqcn = $analysis->resolveImport($childClass);
+        $fqcn = $this->referenceResolver->resolveImport($analysis, $childClass);
 
         if ($fqcn === null) {
             $fqcn = ($analysis->namespace ? $analysis->namespace . '\\' : '') . $childClass;

@@ -30,6 +30,7 @@ readonly class TemplateTypeFinder
      * Parses the `@extends ParentClass<A, B>` annotation on `$class`.
      *
      * @return array{0: string|null, 1: array|null} [$parentClassName, $assignments]
+     * @noinspection PhpUndefinedClassInspection
      */
     private function findAssignments(\ReflectionClass $class): array
     {
@@ -53,6 +54,7 @@ readonly class TemplateTypeFinder
      * correct class, regardless of how many ancestors exist.
      *
      * @return array|null The list of template parameter names defined on the parent, or null if not found.
+     * @noinspection PhpUndefinedClassInspection
      */
     private function findNamesInParent(\ReflectionClass $class, string $parentClassName): array|null
     {
