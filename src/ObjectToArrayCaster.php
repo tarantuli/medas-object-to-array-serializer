@@ -7,7 +7,9 @@ namespace Medas\ObjectToArraySerializer;
 use Medas\Core\{
     Attributes\Entrypoint,
     Attributes\Handler,
+    Attributes\ObjectToArrayHandler,
     Attributes\Service,
+    Interfaces\ObjectToArrayHandler as ObjectToArrayHandlerInterface,
     Interfaces\PropertyHandler
 };
 
@@ -72,6 +74,14 @@ readonly class ObjectToArrayCaster
     private function castToArray(object $object): array
     {
         $reflectionClass = new \ReflectionClass($object);
+
+        if ($objectHandlerAttribute = attribute(ObjectToArrayHandler::class, $reflectionClass)) {
+            /** @var ObjectToArrayHandlerInterface $handler */
+            $handler = \service($objectHandlerAttribute->className);
+
+            return $handler->toArray($object);
+        }
+
         $dontSerializeEmptyValues = attribute(DontSerializeEmptyValues::class, $reflectionClass);
         $values = [];
 

@@ -7,7 +7,9 @@ namespace Medas\ObjectToArraySerializer;
 use Medas\Core\{
     Attributes\Entrypoint,
     Attributes\Handler,
+    Attributes\ObjectToArrayHandler,
     Attributes\Service,
+    Interfaces\ObjectToArrayHandler as ObjectToArrayHandlerInterface,
     Interfaces\PropertyHandler
 };
 
@@ -35,6 +37,14 @@ readonly class ArrayToObjectCaster
     {
         $settings ??= $this->settingsFactory->create();
         $reflectionClass = new \ReflectionClass($className);
+
+        if ($objectHandlerAttribute = attribute(ObjectToArrayHandler::class, $reflectionClass)) {
+            /** @var ObjectToArrayHandlerInterface $handler */
+            $handler = \service($objectHandlerAttribute->className);
+
+            return $handler->toObject($values);
+        }
+
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
         foreach ($values as $propertyName => $value) {
