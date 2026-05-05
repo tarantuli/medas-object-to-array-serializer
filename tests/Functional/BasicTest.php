@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializerTest\Functional;
 
+use Medas\Core\Interfaces\UuidProvider;
 use Medas\ObjectToArraySerializer\Exceptions\ClassThatCastsToNameShouldntHaveConstructorArguments;
-use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
+use Medas\ObjectToArraySerializerTest\MockUps\{
+    ArrayOfChildren,
     ArrayOfEnums,
     ArrayOfInternalTypes,
     BasicClass,
@@ -21,6 +23,7 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     Enums\StringBackedEnum,
     Enums\UnbackedEnum,
     MixedProperties,
+    ObjectHandler\TestObject,
     ObjectToClassName\ExtendedClass,
     ObjectToClassName\HolderClass,
     PrivateProperties,
@@ -28,13 +31,15 @@ use Medas\ObjectToArraySerializerTest\MockUps\{ArrayOfChildren,
     PropertyToSkip,
     TemplateTypes\TemplateExtendingClass,
     WithConstructors\HolderOfIllegalClasses,
-    WithConstructors\HolderOfLegalClasses};
+    WithConstructors\HolderOfLegalClasses
+};
 
 class BasicTest extends BaseTestClass
 {
     public function testBasicClass(): void
     {
         $object = new BasicClass();
+
         $object->id = 1;
         $object->name = 'Test';
 
@@ -44,6 +49,7 @@ class BasicTest extends BaseTestClass
     public function testPrivateProperties(): void
     {
         $object = new PrivateProperties();
+
         $object->id = 1;
 
         $this->executeTest($object);
@@ -59,6 +65,7 @@ class BasicTest extends BaseTestClass
     public function testEmbeddedClass(): void
     {
         $object = new EmbeddedClass();
+
         $object->basicClass = new BasicClass();
         $object->basicClass->name = 'child class';
         $object->privateProperties = new PrivateProperties();
@@ -100,6 +107,7 @@ class BasicTest extends BaseTestClass
     public function testMixed(): void
     {
         $object = new MixedProperties();
+
         $object->property1 = ['cheese'];
 
         $this->executeTest($object);
@@ -108,22 +116,24 @@ class BasicTest extends BaseTestClass
     public function testClosures(): void
     {
         $object = new ClosureClass();
+
         $object->property1 = 'cheese';
         $object->closure = mt_rand(...);
 
-        $this->executeTest($object);
+        $this->executeTestShouldBeDifferent($object);
     }
 
     public function testTemplateTypes(): void
     {
         $object = new TemplateExtendingClass();
+
         $object->elements = [new BasicClass()];
         $object->intIndexed = [new BasicClass(), new BasicClass()];
 
         $this->executeTest($object);
     }
 
-    public function testObjectTOClassName(): void
+    public function testObjectToClassName(): void
     {
         $object = new HolderClass(new ExtendedClass());
 
@@ -140,6 +150,7 @@ class BasicTest extends BaseTestClass
     public function testDontSerializeMe(): void
     {
         $object = new PropertyToSkip();
+
         $object->dontSerializeMe = 20;
         $object->doSerializeMe = 30;
 
@@ -163,6 +174,7 @@ class BasicTest extends BaseTestClass
     public function testPropertyHandler(): void
     {
         $object = new WithPropertyHandler();
+
         $object->properties = [1, 2, 3, 4];
 
         $this->executeTest($object);
@@ -173,5 +185,14 @@ class BasicTest extends BaseTestClass
         $object = new EmptyValues();
 
         $this->executeTest($object);
+    }
+
+    public function testObjectHandler(): void
+    {
+        $provider = service(UuidProvider::class);
+        $object = new TestObject($provider->create());
+        $result = $this->serializeThenUnserialize($object);
+
+        self::assertEquals((string) $result->id(), (string) $object->id());
     }
 }

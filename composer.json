@@ -17,8 +17,9 @@
     "php": "^8.4"
   },
   "require-dev": {
-    "morphp/medas-entity-manager": "^3",
+    "morphp/medas-object-instantiator": "^3",
     "morphp/medas-service-manager": "^3",
+    "morphp/medas-ramsey-uuid-bridge": "^3",
     "phpunit/phpunit": "^10"
   },
   "autoload": {

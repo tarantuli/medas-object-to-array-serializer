@@ -16,6 +16,8 @@ use Medas\Core\{
 #[Service, Entrypoint]
 readonly class ObjectToArrayCaster
 {
+    public const string HANDLER_KEY_PREFIX = '__handler:';
+
     public function __construct(
         private SerializeToClassName\ClassManager $serializeToClassNameManager,
     )
@@ -76,10 +78,13 @@ readonly class ObjectToArrayCaster
         $reflectionClass = new \ReflectionClass($object);
 
         if ($objectHandlerAttribute = attribute(ObjectToArrayHandler::class, $reflectionClass)) {
+            // There is a custom handler for this object, so we use it
             /** @var ObjectToArrayHandlerInterface $handler */
             $handler = \service($objectHandlerAttribute->className);
 
-            return $handler->toArray($object);
+            // They key is a special value which is extremely unlikely to occur in other serialization data, that will
+            // be used to identify the handler
+            return [self::HANDLER_KEY_PREFIX . $objectHandlerAttribute->className => $handler->toArray($object)];
         }
 
         $dontSerializeEmptyValues = attribute(DontSerializeEmptyValues::class, $reflectionClass);

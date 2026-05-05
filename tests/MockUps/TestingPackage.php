@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializerTest\MockUps;
 
-use Medas\Core\AsSingleton;
-use Medas\ServiceManager\BasePackage;
+use Medas\Core\{AsSingleton, BasePackage};
 
 class TestingPackage extends BasePackage
 {
@@ -14,6 +13,11 @@ class TestingPackage extends BasePackage
     public function dependencies(): array
     {
         return [];
+    }
+
+    public function isTestPackage(): bool
+    {
+        return true;
     }
 
     public function sourceDirectory(): string

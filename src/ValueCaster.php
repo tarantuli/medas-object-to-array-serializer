@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializer;
 
-use Medas\Core\Attributes\Service;
+use Medas\Core\{Attributes\Service, Interfaces\ObjectToArrayHandler};
 use Medas\PhpClassAnalysis\{ClassAnalyser, PhpKeywords, ReferenceFinder\ReferenceResolver};
 
 #[Service]
@@ -42,7 +42,7 @@ readonly class ValueCaster
         $doccomment = $reflectionProperty->getDocComment();
 
         if ($doccomment === false) {
-            throw new Exceptions\ArraysMustSpecifyContentType($reflectionProperty);
+            return 'mixed';
         }
 
         // Match TypeName[], TypeName[][], etc. — capture everything up to the final []
@@ -127,6 +127,21 @@ readonly class ValueCaster
 
     public function checkValueType(ArrayToObjectCaster $arrayToObjectCaster, mixed &$value, string $typeName): bool
     {
+        if (is_array($value)) {
+            $firstKey = array_key_first($value);
+
+            if (is_string($firstKey) && str_starts_with($firstKey, ObjectToArrayCaster::HANDLER_KEY_PREFIX)) {
+                // This uses a custom handler, which we extract from the key, then use
+                $handlerClass = substr($firstKey, strlen(ObjectToArrayCaster::HANDLER_KEY_PREFIX));
+
+                /** @var ObjectToArrayHandler $handler */
+                $handler = \service($handlerClass);
+                $value = $handler->toObject($value[$firstKey]);
+
+                return true;
+            }
+        }
+
         if ($typeName === 'mixed') {
             return true;
         }
