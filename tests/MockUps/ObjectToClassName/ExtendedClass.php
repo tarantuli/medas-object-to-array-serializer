@@ -6,5 +6,4 @@ namespace Medas\ObjectToArraySerializerTest\MockUps\ObjectToClassName;
 
 class ExtendedClass extends BaseClass
 {
-
 }

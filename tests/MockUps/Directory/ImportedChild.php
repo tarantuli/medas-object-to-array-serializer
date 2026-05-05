@@ -6,5 +6,4 @@ namespace Medas\ObjectToArraySerializerTest\MockUps\Directory;
 
 class ImportedChild
 {
-
 }

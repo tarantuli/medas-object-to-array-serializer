@@ -9,5 +9,4 @@ use Medas\ObjectToArraySerializer\SerializeToClassName\CastToClassName;
 #[CastToClassName]
 class BaseClass
 {
-
 }

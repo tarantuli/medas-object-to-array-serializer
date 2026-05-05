@@ -12,8 +12,10 @@ class EmptyValues
     // Empty values
     public string $emptyString = '';
     public null $null = null;
+
     /** @var string[] */
     public array $emptyArray = [];
+
     public bool $false = false;
     public int $zero = 0;
     public string $zeroString = "0";
