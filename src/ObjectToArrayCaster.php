@@ -6,8 +6,6 @@ namespace Medas\ObjectToArraySerializer;
 
 use Medas\Core\{
     Attributes\Entrypoint,
-    Attributes\Handler,
-    Attributes\ObjectToArrayHandler,
     Attributes\Service,
     Interfaces\ObjectToArrayHandler as ObjectToArrayHandlerInterface,
     Interfaces\PropertyHandler
@@ -19,6 +17,7 @@ readonly class ObjectToArrayCaster
     public const string HANDLER_KEY_PREFIX = '__handler:';
 
     public function __construct(
+        private ClassMetadata\ClassMetadataCache  $classMetadataCache,
         private SerializeToClassName\ClassManager $serializeToClassNameManager,
     )
     {
@@ -33,100 +32,84 @@ readonly class ObjectToArrayCaster
         }
 
         $castObjects[$objectId] = count($castObjects);
-        $value = $this->castToArray($value);
 
-        // Recursively cast child values to arrays as well
-        do {
-            $foundObject = false;
+        return $this->processArray($this->castToArray($value), $castObjects);
+    }
 
-            array_walk_recursive($value, function (&$nodeValue) use (&$foundObject, &$castObjects) {
-                if (!is_object($nodeValue) || $nodeValue instanceof \Closure) {
-                    return;
-                }
+    private function processArray(array $array, array &$castObjects): array
+    {
+        foreach ($array as $key => $value) {
+            $array[$key] = $this->processValue($value, $castObjects);
+        }
 
-                $objectId = spl_object_id($nodeValue);
+        return $array;
+    }
 
-                if (array_key_exists($objectId, $castObjects)) {
-                    $nodeValue = ["recursion" => $castObjects[$objectId]];
+    private function processValue(mixed $value, array &$castObjects): mixed
+    {
+        if (is_array($value)) {
+            return $this->processArray($value, $castObjects);
+        }
 
-                    return;
-                }
+        if (!is_object($value) || $value instanceof \Closure) {
+            return $value;
+        }
 
-                $castObjects[$objectId] = count($castObjects);
-                $foundObject = true;
+        $objectId = spl_object_id($value);
 
-                if ($this->serializeToClassNameManager->shouldSerializeToClassName($nodeValue::class)) {
-                    $nodeValue = $nodeValue::class;
-                }
-                elseif ($nodeValue instanceof \BackedEnum) {
-                    $nodeValue = $nodeValue->value;
-                }
-                elseif ($nodeValue instanceof \UnitEnum) {
-                    $nodeValue = $nodeValue->name;
-                }
-                else {
-                    $nodeValue = $this->castToArray($nodeValue);
-                }
-            });
-        } while ($foundObject);
+        if (array_key_exists($objectId, $castObjects)) {
+            return ["recursion" => $castObjects[$objectId]];
+        }
 
-        return $value;
+        $castObjects[$objectId] = count($castObjects);
+
+        if ($this->serializeToClassNameManager->shouldSerializeToClassName($value::class)) {
+            return $value::class;
+        }
+
+        if ($value instanceof \BackedEnum) {
+            return $value->value;
+        }
+
+        if ($value instanceof \UnitEnum) {
+            return $value->name;
+        }
+
+        return $this->processArray($this->castToArray($value), $castObjects);
     }
 
     private function castToArray(object $object): array
     {
-        $reflectionClass = new \ReflectionClass($object);
+        $meta = $this->classMetadataCache->get($object::class);
 
-        if ($objectHandlerAttribute = attribute(ObjectToArrayHandler::class, $reflectionClass)) {
-            // There is a custom handler for this object, so we use it
+        if ($meta->objectHandler !== null) {
             /** @var ObjectToArrayHandlerInterface $handler */
-            $handler = \service($objectHandlerAttribute->className);
-
-            // They key is a special value which is extremely unlikely to occur in other serialization data, that will
-            // be used to identify the handler
-            return [self::HANDLER_KEY_PREFIX . $objectHandlerAttribute->className => $handler->toArray($object)];
+            return [self::HANDLER_KEY_PREFIX . $meta->objectHandlerClass => $meta->objectHandler->toArray($object)];
         }
 
-        $dontSerializeEmptyValues = attribute(DontSerializeEmptyValues::class, $reflectionClass);
         $values = [];
 
-        // This loop is to make sure that promoted properties are serialized first
-        foreach ([true, false] as $promotionState) {
-            foreach ($reflectionClass->getProperties() as $reflectionProperty) {
-                if ($reflectionProperty->isStatic()) {
-                    continue;
-                }
-
-                if ($reflectionProperty->isPromoted() !== $promotionState) {
-                    continue;
-                }
-
-                if (!$reflectionProperty->isInitialized($object)) {
-                    continue;
-                }
-
-                if ($reflectionProperty->getAttributes(DontSerializeMe::class)) {
-                    continue;
-                }
-
-                $value = $reflectionProperty->getValue($object);
-
-                if ($value instanceof \Closure) {
-                    continue;
-                }
-
-                if ($handlerAttribute = attribute(Handler::class, $reflectionProperty)) {
-                    /** @var PropertyHandler $handler */
-                    $handler = \service($handlerAttribute->className);
-                    $value = $handler->serialize($value);
-                }
-
-                if ($dontSerializeEmptyValues && empty($value) && $value !== '0' && $value !== '') {
-                    continue;
-                }
-
-                $values[$reflectionProperty->name] = $value;
+        foreach ($meta->properties as $propMeta) {
+            if (!$propMeta->reflection->isInitialized($object)) {
+                continue;
             }
+
+            $value = $propMeta->reflection->getValue($object);
+
+            if ($value instanceof \Closure) {
+                continue;
+            }
+
+            if ($propMeta->handler !== null) {
+                /** @var PropertyHandler $handler */
+                $value = $propMeta->handler->serialize($value);
+            }
+
+            if ($meta->dontSerializeEmptyValues && empty($value) && $value !== '0' && $value !== '') {
+                continue;
+            }
+
+            $values[$propMeta->name] = $value;
         }
 
         return $values;
