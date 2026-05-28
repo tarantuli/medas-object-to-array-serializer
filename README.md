@@ -2,109 +2,93 @@
 
 Part of the [Medas framework](https://github.com/tarantuli/medas-core).
 
-Bidirectional serializer that converts PHP objects to plain arrays and back. It uses reflection to walk an object's full property graph — including nested objects, enums, and typed arrays — without requiring any changes to your classes beyond optional attributes for fine-tuning behaviour.
+## Description
 
-## Requirements
+Bidirectional serializer that converts PHP objects to plain associative arrays and back. It uses reflection to walk an object's full property graph — including nested objects, enums, typed arrays, and generic base classes — without requiring any changes to the classes being serialized beyond optional attributes for fine-tuning behaviour.
 
-- PHP 8.4+
-- `morphp/medas-core` ^2
-- `morphp/medas-php-class-analysis` ^2
+**Supported property types:**
 
-## Installation
+- Scalars: `int`, `float`, `string`, `bool`
+- `mixed` — passed through as-is
+- Nested objects — serialized recursively and reconstructed from declared property types
+- `BackedEnum` — serialized to its backing `int`/`string` value, restored with `::from()`
+- `UnitEnum` — serialized to its case name, restored via `::case()`
+- Arrays comprising any of the above — element type declared via `@var` PHPDoc
+- `Closure` — kept as-is in the array; not reconstructed on unserialize
 
-```bash
-composer require morphp/medas-object-to-array-serializer
-```
+All property visibilities (public, protected, private) and promoted constructor properties are included.
 
-Register the package with your service container:
+**The constructor is not called during unserialisation** — properties are set directly via reflection. Constructor-side validation is intentionally bypassed.
+
+**Optional attributes:**
+
+| Attribute                         | Target   | Effect                                                                                   |
+|-----------------------------------|----------|------------------------------------------------------------------------------------------|
+| `#[DontSerializeMe]`              | Property | Excluded from serialization entirely                                                     |
+| `#[DontSerializeEmptyValues]`     | Class    | `null`, `[]`, `false`, `0` omitted from output (`''` and `'0'` are kept)                 |
+| `#[CastToClassName]`              | Class    | Serializes as the FQCN string; unserializes by instantiating the class with no arguments |
+| `#[Handler(HandlerClass::class)]` | Property | Delegates serialize/unserialize to a custom `PropertyHandler` service                    |
+
+## Usage
+
+### Package developer context
+
+Register the package:
 
 ```php
 use Medas\ObjectToArraySerializer\ObjectToArraySerializerPackage;
 
-ObjectToArraySerializerPackage::instance()->boot();
+ObjectToArraySerializerPackage::instance();
 ```
 
-## Basic usage
-
-Retrieve `ObjectToArraySerializer` from the service container and call `serialize` / `unserialize`:
+**Basic serialize and unserialize:**
 
 ```php
 use Medas\ObjectToArraySerializer\ObjectToArraySerializer;
+use Medas\Core\Attributes\Service;
 
-$serializer = service(ObjectToArraySerializer::class);
-
-// Object → array
-$array = $serializer->serialize($object);
-
-// Array → object
-$object = $serializer->unserialize($array, class: MyClass::class);
-```
-
-`serialize` accepts any object and returns a flat or nested associative array. `unserialize` reconstructs the object using reflection — the constructor is **not** called, so constructor-side validation is bypassed by design.
-
-## Supported property types
-
-The serializer handles all property visibilities (public, protected, private) and all of the following types:
-
-- Scalar types: `int`, `float`, `string`, `bool`
-- `mixed` — passed through as-is in both directions
-- Nested objects — serialized recursively into nested arrays and reconstructed on the way back
-- `BackedEnum` — serialized to its backing value (`int` or `string`), restored with `::from()`
-- `UnitEnum` — serialized to its case name, restored with `::case()`
-- Arrays of any of the above — see [Typed arrays](#typed-arrays) below
-- `Closure` — serialized as-is (closures are kept in the array but not reconstructed on unserialize)
-
-### Example: basic class
-
-```php
-class User
-{
-    public int $id;
-    public string $name;
-}
-
-$user = new User();
-$user->id = 1;
-$user->name = 'Alice';
-
-$array = $serializer->serialize($user);
-// ['id' => 1, 'name' => 'Alice']
-
-$restored = $serializer->unserialize($array, class: User::class);
-// User { $id: 1, $name: 'Alice' }
-```
-
-### Example: promoted and elevated properties
-
-Promoted constructor properties and properties of any visibility are all included:
-
-```php
-class Point
+#[Service]
+readonly class DataTransformer
 {
     public function __construct(
-        public int     $x,
-        protected int  $y,
-        private int    $z,
+        private ObjectToArraySerializer $serializer,
     ) {}
-}
 
-$array = $serializer->serialize(new Point(1, 2, 3));
-// ['x' => 1, 'y' => 2, 'z' => 3]
+    public function toArray(object $object): array
+    {
+        return $this->serializer->serialize($object);
+    }
+
+    public function fromArray(array $data, string $class): object
+    {
+        return $this->serializer->unserialize($data, class: $class);
+    }
+}
 ```
 
-### Example: nested objects
+**Nested objects:**
 
 ```php
-class Order
+class Address
 {
-    public Customer $customer;
-    public Address  $shippingAddress;
+    public string $street;
+    public string $city;
 }
+
+class Customer
+{
+    public string  $name;
+    public Address $address;
+}
+
+$array = $serializer->serialize($customer);
+// ['name' => 'Alice', 'address' => ['street' => '...', 'city' => '...']]
+
+$restored = $serializer->unserialize($array, class: Customer::class);
+// Customer { $name: 'Alice', $address: Address { ... } }
 ```
 
-Nested objects are serialized recursively and reconstructed automatically based on the property's declared type.
-
-### Example: enums
+**Enums:**
 
 ```php
 enum Status: string { case Active = 'active'; case Inactive = 'inactive'; }
@@ -120,41 +104,22 @@ $array = $serializer->serialize($task);
 // ['status' => 'active', 'priority' => 'High']
 ```
 
-## Typed arrays
-
-For array properties, the serializer needs to know the element type. You must declare it using a `@var` PHPDoc annotation — both short and generic forms are supported:
+**Typed arrays — `@var` annotation required:**
 
 ```php
 class Team
 {
     /** @var Member[] */
     public array $members;
+
+    /** @var string[] */
+    public array $roles;
 }
 ```
 
-```php
-class Team
-{
-    /** @var array<Member> */
-    public array $members;
-}
-```
+Supported formats: `Member[]`, `array<Member>`, relative names, sub-namespace names (`Sub\Ns\Member[]`), and FQCNs (`\Fully\Qualified\Member[]`). Arrays without a `@var` annotation throw `ArraysMustSpecifyContentType` at unserialize time.
 
-The class reference in `@var` can be a short name (resolved via the file's `use` statements), a relative name within the same namespace, or a fully qualified name:
-
-```php
-/** @var Member[] */                                      // relative / imported
-/** @var Sub\Namespace\Member[] */                        // relative with sub-namespace
-/** @var \Fully\Qualified\Member[] */                     // absolute FQCN
-```
-
-Arrays of internal PHP types (`string[]`, `int[]`, etc.) are also supported and require no special treatment beyond the `@var` annotation.
-
-> **Note:** An array property without a `@var` annotation will throw `ArraysMustSpecifyContentType` at unserialize time.
-
-### Generic base classes
-
-Template types defined via PHPDoc are resolved through the class hierarchy:
+**Generic base classes with template types:**
 
 ```php
 /** @template T */
@@ -168,13 +133,9 @@ abstract class Collection
 class ProductCollection extends Collection {}
 ```
 
-When unserializing a `ProductCollection`, the `T` placeholder is resolved to `Product` and each element in `$items` is cast accordingly.
+`T` is resolved to `Product` when unserializing a `ProductCollection`. The template type finder walks the class hierarchy to resolve all `@template` / `@extends` declarations.
 
-## Attributes
-
-### `#[DontSerializeMe]`
-
-Marks a property to be excluded from serialization entirely. The property will not appear in the output array and will retain its default value after unserialization.
+**`#[DontSerializeMe]` — exclude a property:**
 
 ```php
 use Medas\ObjectToArraySerializer\DontSerializeMe;
@@ -186,11 +147,11 @@ class Session
     #[DontSerializeMe]
     public string $rawPassword = '';
 }
+
+// $rawPassword is absent from the array and retains its default on unserialize
 ```
 
-### `#[DontSerializeEmptyValues]`
-
-Applied to a class. Properties whose value is considered empty (`null`, `[]`, `false`, `0`) will be omitted from the serialized array. The string `'0'` and empty string `''` are **not** considered empty and will always be included.
+**`#[DontSerializeEmptyValues]` — omit falsy properties:**
 
 ```php
 use Medas\ObjectToArraySerializer\DontSerializeEmptyValues;
@@ -200,53 +161,47 @@ class SearchFilter
 {
     public string $query     = '';
     public int    $page      = 0;
-    public bool   $published = false;
+    public bool   $active    = false;
     public array  $tags      = [];
 }
 
 $serializer->serialize(new SearchFilter());
-// ['query' => '']  — only the empty string survives; 0, false, [] are dropped
+// ['query' => '']  — empty string is kept; 0, false, [] are dropped
 ```
 
-### `#[CastToClassName]`
-
-Applied to a class (inherited by subclasses). Instead of serializing the object's properties, the serializer stores only the fully-qualified class name as a string. On unserialize, the class is instantiated with no constructor arguments.
-
-This is useful for representing type information rather than data — for example, a strategy or handler class stored in a configuration object.
+**`#[CastToClassName]` — serialize as a class name:**
 
 ```php
 use Medas\ObjectToArraySerializer\SerializeToClassName\CastToClassName;
 
 #[CastToClassName]
-class JsonFormatter {}
+abstract class Formatter {}
 
-class ExcelFormatter extends JsonFormatter {}  // also cast to class name
+class JsonFormatter extends Formatter {}
+class CsvFormatter  extends Formatter {}
 
 class ReportConfig
 {
-    public JsonFormatter $formatter;
+    public Formatter $formatter;
 }
 
 $config = new ReportConfig();
-$config->formatter = new ExcelFormatter();
+$config->formatter = new CsvFormatter();
 
 $array = $serializer->serialize($config);
-// ['formatter' => 'App\Formatters\ExcelFormatter']
+// ['formatter' => 'MyApp\Formatters\CsvFormatter']
 
 $restored = $serializer->unserialize($array, class: ReportConfig::class);
-// ReportConfig { $formatter: ExcelFormatter {} }
+// ReportConfig { $formatter: CsvFormatter {} }
 ```
 
-> **Note:** Classes marked with `#[CastToClassName]` must have no required constructor arguments.
+Classes annotated with `#[CastToClassName]` must have no required constructor arguments.
 
-### `#[Handler]`
-
-Applied to a property. Delegates serialization and unserialization of that property to a custom `PropertyHandler` service. Useful for types that need non-trivial transformation (e.g. packing an array into a comma-separated string).
+**`#[Handler]` — custom property handler:**
 
 ```php
-use Medas\Core\Attributes\Handler;
+use Medas\Core\Attributes\{Handler, Service};
 use Medas\Core\Interfaces\PropertyHandler;
-use Medas\Core\Attributes\Service;
 
 #[Service]
 readonly class CsvHandler implements PropertyHandler
@@ -267,30 +222,34 @@ class Report
     #[Handler(CsvHandler::class)]
     public array $tags;
 }
+
+// ['php', 'oop'] serializes to 'php,oop' and is restored to ['php', 'oop']
 ```
 
-`$tags = ['php', 'oop']` serializes to `'php,oop'` and is restored to `['php', 'oop']` on unserialize.
-
-## Error handling
-
-All errors throw typed exceptions from the `Medas\ObjectToArraySerializer\Exceptions` namespace:
-
-| Exception | Thrown when |
-|---|---|
-| `ValueMustBeObject` | `serialize()` is called with a non-object |
-| `ValueMustBeArray` | `unserialize()` is called with a non-array |
-| `ClassNameMustBeString` | `unserialize()` is called without a valid existing class name |
-| `PropertyDoesNotExist` | The array contains a key that doesn't match any property (when `skipUnknownValues` is `false`) |
-| `CantCastValueToType` | A value cannot be cast to the declared property type |
-| `ArraysMustSpecifyContentType` | An array property has no `@var` type annotation |
-| `ClassThatCastsToNameShouldntHaveConstructorArguments` | A `#[CastToClassName]` class has required constructor parameters |
-
-By default, unknown keys in the input array are silently skipped. To throw instead, pass a custom `Settings` object:
+**Controlling unknown key behaviour:**
 
 ```php
-use Medas\ObjectToArraySerializer\ArrayToObjectCaster;
-use Medas\ObjectToArraySerializer\ArrayToObjectCaster\Settings;
+use Medas\ObjectToArraySerializer\{ArrayToObjectCaster, ArrayToObjectCaster\Settings};
 
+// By default, unknown array keys are silently skipped.
+// Pass skipUnknownValues: false to throw PropertyDoesNotExist instead.
 $caster = service(ArrayToObjectCaster::class);
 $object = $caster->cast($array, MyClass::class, new Settings(skipUnknownValues: false));
 ```
+
+### Backend user context
+
+All serialization happens through injected services — there are no CLI commands. The package is most commonly used by `medas-storage-manager` backends and REST response serializers, but it can be injected anywhere an object ↔ array transformation is needed.
+
+**Exception reference:**
+
+| Exception                                              | Thrown when                                                          |
+|--------------------------------------------------------|----------------------------------------------------------------------|
+| `ValueMustBeObject`                                    | `serialize()` called with a non-object                               |
+| `ValueMustBeArray`                                     | `unserialize()` called with a non-array                              |
+| `ClassNameMustBeValidAndExisting`                      | `unserialize()` called with a non-existent class name                |
+| `PropertyDoesNotExist`                                 | Array key has no matching property (when `skipUnknownValues: false`) |
+| `CantCastValueToType`                                  | Value cannot be cast to the declared property type                   |
+| `ArraysMustSpecifyContentType`                         | Array property has no `@var` annotation                              |
+| `CastingToUnionTypesIsNotImplemented`                  | Property has a union type (e.g. `int\|string`)                       |
+| `ClassThatCastsToNameShouldntHaveConstructorArguments` | `#[CastToClassName]` class has required constructor parameters       |
