@@ -7,12 +7,13 @@ namespace Medas\ObjectToArraySerializer;
 use Medas\Core\{
     Attributes\Entrypoint,
     Attributes\Service,
+    Interfaces\ObjectToArrayCaster as ObjectToArrayCasterInterface,
     Interfaces\ObjectToArrayHandler as ObjectToArrayHandlerInterface,
     Interfaces\PropertyHandler
 };
 
 #[Service, Entrypoint]
-readonly class ObjectToArrayCaster
+readonly class ObjectToArrayCaster implements ObjectToArrayCasterInterface
 {
     public const string HANDLER_KEY_PREFIX = '__handler:';
 

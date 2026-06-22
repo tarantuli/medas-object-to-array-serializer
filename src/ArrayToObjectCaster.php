@@ -9,12 +9,13 @@ use Medas\Core\{
     Attributes\Handler,
     Attributes\ObjectToArrayHandler,
     Attributes\Service,
+    Interfaces\ArrayToObjectCaster as ArrayToObjectCasterInterface,
     Interfaces\ObjectToArrayHandler as ObjectToArrayHandlerInterface,
     Interfaces\PropertyHandler
 };
 
 #[Service, Entrypoint]
-readonly class ArrayToObjectCaster
+readonly class ArrayToObjectCaster implements ArrayToObjectCasterInterface
 {
     public function __construct(
         private ArrayToObjectCaster\SettingsFactory $settingsFactory,
