@@ -76,6 +76,10 @@ readonly class ObjectToArrayCaster implements ObjectToArrayCasterInterface
             return $value->name;
         }
 
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format(DATE_ATOM);
+        }
+
         return $this->processArray($this->castToArray($value), $castObjects);
     }
 
