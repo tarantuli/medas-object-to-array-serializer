@@ -78,11 +78,12 @@ readonly class ArrayToObjectCaster implements ArrayToObjectCasterInterface
                             $this,
                             $reflectionProperty,
                             $reflectionClass,
-                            $value
+                            $value,
+                            $settings
                         );
                     }
 
-                    if (!$this->valueCaster->checkValueType($this, $value, $typeName)) {
+                    if (!$this->valueCaster->checkValueType($this, $value, $typeName, $settings)) {
                         throw new Exceptions\CantCastValueToType(
                             $className,
                             $propertyName,

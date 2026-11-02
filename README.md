@@ -235,6 +235,10 @@ use Medas\ObjectToArraySerializer\{ArrayToObjectCaster, ArrayToObjectCaster\Sett
 // Pass skipUnknownValues: false to throw PropertyDoesNotExist instead.
 $caster = service(ArrayToObjectCaster::class);
 $object = $caster->cast($array, MyClass::class, new Settings(skipUnknownValues: false));
+
+// Query strings and form data only have strings: coerceStrings accepts "3", "2.5" and "true"
+// for int, float and bool properties (and int-backed enums), in nested objects and arrays too.
+$object = $caster->cast($_GET, MyClass::class, new Settings(skipUnknownValues: true, coerceStrings: true));
 ```
 
 ### Backend user context

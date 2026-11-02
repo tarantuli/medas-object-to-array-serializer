@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Medas\ObjectInstantiator\ObjectInstantiator;
+use Medas\ObjectInstantiator\ObjectInstantiatorPackage;
 use Medas\ObjectToArraySerializer\ObjectToArraySerializerPackage;
 use Medas\ObjectToArraySerializerTest\MockUps\TestingPackage;
 use Medas\RamseyUuidBridge\RamseyUuidBridgePackage;
@@ -15,6 +16,7 @@ new ServiceManager(function (): ServiceConfigBuilder {
 
     $config->addPackages([
         ObjectToArraySerializerPackage::instance(),
+        ObjectInstantiatorPackage::instance(),
         TestingPackage::instance(),
         RamseyUuidBridgePackage::instance(),
     ]);

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ObjectToArraySerializerTest\MockUps\ObjectHandler;
 
-use Medas\Core\Interfaces\HasId;
-use Medas\Core\Interfaces\Uuid;
+use Medas\Core\Interfaces\{HasId, Uuid};
 
 readonly class TestObject implements HasId
 {

@@ -20,10 +20,11 @@ readonly class ValueCaster
     }
 
     public function castArrayMembers(
-        ArrayToObjectCaster $arrayToObjectCaster,
-        \ReflectionProperty $reflectionProperty,
-        \ReflectionClass    $reflectionClass,
-        mixed               &$value
+        ArrayToObjectCaster               $arrayToObjectCaster,
+        \ReflectionProperty               $reflectionProperty,
+        \ReflectionClass                  $reflectionClass,
+        mixed                             &$value,
+        ArrayToObjectCaster\Settings|null $settings = null,
     ): void
     {
         $arrayType = $this->findArrayType($reflectionClass, $reflectionProperty);
@@ -33,7 +34,8 @@ readonly class ValueCaster
             $value,
             $arrayType,
             $reflectionClass,
-            $reflectionProperty
+            $reflectionProperty,
+            $settings
         );
     }
 
@@ -59,11 +61,12 @@ readonly class ValueCaster
     }
 
     private function castArrayByType(
-        ArrayToObjectCaster $arrayToObjectCaster,
-        mixed               &$value,
-        string              $arrayType,
-        \ReflectionClass    $reflectionClass,
-        \ReflectionProperty $reflectionProperty
+        ArrayToObjectCaster               $arrayToObjectCaster,
+        mixed                             &$value,
+        string                            $arrayType,
+        \ReflectionClass                  $reflectionClass,
+        \ReflectionProperty               $reflectionProperty,
+        ArrayToObjectCaster\Settings|null $settings = null,
     ): void
     {
         if (str_ends_with($arrayType, '[]')) {
@@ -85,7 +88,8 @@ readonly class ValueCaster
                     $child,
                     $innerType,
                     $reflectionClass,
-                    $reflectionProperty
+                    $reflectionProperty,
+                    $settings
                 );
             }
 
@@ -98,7 +102,7 @@ readonly class ValueCaster
         }
 
         foreach ($value as &$child) {
-            if (!$this->checkValueType($arrayToObjectCaster, $child, $arrayType)) {
+            if (!$this->checkValueType($arrayToObjectCaster, $child, $arrayType, $settings)) {
                 throw new Exceptions\CantCastValueToType(
                     $reflectionClass->name,
                     $reflectionProperty->name,
@@ -125,7 +129,12 @@ readonly class ValueCaster
         return $fqcn;
     }
 
-    public function checkValueType(ArrayToObjectCaster $arrayToObjectCaster, mixed &$value, string $typeName): bool
+    public function checkValueType(
+        ArrayToObjectCaster               $arrayToObjectCaster,
+        mixed                             &$value,
+        string                            $typeName,
+        ArrayToObjectCaster\Settings|null $settings = null,
+    ): bool
     {
         if (is_array($value)) {
             $firstKey = array_key_first($value);
@@ -153,6 +162,10 @@ readonly class ValueCaster
             return true;
         }
 
+        if ($settings?->coerceStrings && is_string($value) && $this->coerceString($value, $typeName)) {
+            return true;
+        }
+
         if ($currentType === 'int' && $typeName === 'float') {
             $value = (float) $value;
 
@@ -166,7 +179,7 @@ readonly class ValueCaster
         }
 
         if (is_array($value) && class_exists($typeName)) {
-            $value = $arrayToObjectCaster->cast($value, $typeName);
+            $value = $arrayToObjectCaster->cast($value, $typeName, $settings);
 
             return true;
         }
@@ -184,6 +197,41 @@ readonly class ValueCaster
         }
 
         return false;
+    }
+
+    /**
+     * Turns a string into the int, float or bool it spells, when it does: "3", "-1", "2.5", "true",
+     * "false", "1", "0", "yes", "no", "on", "off"; and into the case of an int-backed enum. Other
+     * types and strings are left alone, so they fail the usual way.
+     */
+    private function coerceString(mixed &$value, string $typeName): bool
+    {
+        if (enum_exists($typeName)) {
+            $enum = new \ReflectionEnum($typeName);
+
+            if ((string) $enum->getBackingType() !== 'int' || !preg_match('#^-?\d+$#', $value)) {
+                return false;
+            }
+
+            $value = $this->getEnumValue((int) $value, $enum);
+
+            return true;
+        }
+
+        $coerced = match ($typeName) {
+            'int' => preg_match('#^-?\d+$#', $value) ? (int) $value : null,
+            'float' => is_numeric($value) ? (float) $value : null,
+            'bool' => filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE),
+            default => null,
+        };
+
+        if ($coerced === null) {
+            return false;
+        }
+
+        $value = $coerced;
+
+        return true;
     }
 
     private function getEnumValue(string|int $value, \ReflectionEnum $enum): \UnitEnum
